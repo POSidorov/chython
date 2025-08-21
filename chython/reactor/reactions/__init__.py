@@ -35,6 +35,8 @@ from ._diels_alder import template as diels_alder_template
 from ._evans_aldol import template as evans_aldo_template
 from ._gilman import template as gilman_template
 from ._heck import template as heck_template
+from ._horner_wadsworth_emmons import template as horner_wadsworth_emmons_template
+from ._nazarov_cyclization import template as nazarov_cyclization_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 
