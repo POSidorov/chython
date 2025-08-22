@@ -36,6 +36,8 @@ from ._evans_aldol import template as evans_aldol_template
 from ._biginelli import template as biginelli_template
 from ._swern_oxidation import template as swern_oxidation_template
 from ._ugi import template as ugi_template
+from ._bucherer_bergs import template as bucherer_bergs_template
+from ._hantzsch import template as hantzsch_template
 from ._gilman import template as gilman_template
 from ._heck import template as heck_template
 from ._horner_wadsworth_emmons import template as horner_wadsworth_emmons_template
