@@ -30,11 +30,11 @@ template = {
                 #Alk#Alk-Alk-N
                 '[C;x0,x1;z2:1]=[C;x1;z2:2]([O;M])[C;x1;z1:3][N;z1:4][C;x1;z1;M][C;x0;z1;M][C;z3:5]#[C;z3:6]',
                 #Ar-N
-                '[C;z2:1]=[C;x1;z2:2]([O;M])[C;x1;z1:3][N;z1:4][C;x1;z1;M][C;a;M]:[C;a;M][C;z3:5]#[C;z3:6]',
+                '[C;x0,x1;z2:1]=[C;x1;z2:2]([O;M])[C;x1;z1:3][N;z1:4][C;x1;z1;M][C;a;M]:[C;a;M][C;z3:5]#[C;z3:6]',
                 #Alk#Alk-Alk-Alk-N
-                '[C;x0,x1;z2:1]=[C;x1;z2:2][C;x1;z1:3][N;z1:4][C;z1;M][C;z1;M][C;z1;M][C;z3:6]#[C;z3:5]'
+                '[C;x0,x1;z2:1]=[C;x1;z2:2][C;x1;z1:3][N;z1:4][C;z1;M][C;z1;M][C;z1;M][C;z3:5]#[C;z3:6]'
             ],
-            'product': '[A:1]1=[A:2][A:3][A:6]([A:4])[A:5]1',
+            'product': '[A:1]1=[A:2][A:3][A:5]([A:4])[A:6]1',
             'alerts': [],
             'ufe': {
                 'A': '[A:1][A:6]'
@@ -49,7 +49,7 @@ template = {
             'B': [
                 #Formaldehyde
                 '[O;z2;x0:7]=[C;D1;x1;z2:8]',
-                #Two acids
+                #2,2-dimethoxypropane
                 '[O;z1:7]-[C;x2;z1:8]-[O;z1:9]'
             ],
             'product': '[A:1]1[A:2][A:5]([A:3]=[A:4])[A:6][A:8]1',
@@ -62,4 +62,3 @@ template = {
     ],
     'alerts': []
 }
-
