@@ -32,7 +32,7 @@ template = {
                 #Ar-N
                 '[C;x0,x1;z2:1]=[C;x1;z2:2]([O;M])[C;x1;z1:3][N;z1:4][C;x1;z1;M][C;a;M]:[C;a;M][C;z3:5]#[C;z3:6]',
                 #Alk#Alk-Alk-Alk-N
-                '[C;x0,x1;z2:1]=[C;x1;z2:2][C;x1;z1:3][N;z1:4][C;z1;M][C;z1;M][C;z1;M][C;z3:5]#[C;z3:6]'
+                '[C;x0,x1;z2:1]=[C;x1;z2:2]([O;M])[C;x1;z1:3][N;z1:4][C;z1;M][C;z1;M][C;z1;M][C;z3:5]#[C;z3:6]'
             ],
             'product': '[A:1]1=[A:2][A:3][A:5]([A:4])[A:6]1',
             'alerts': [],
