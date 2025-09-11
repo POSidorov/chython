@@ -21,43 +21,48 @@
 
 
 template = {
-    'name': 'Diels Alder Reaction',
+    'name' : 'Diels Alder Reaction',
     'description': 'Conjugated diene and a dienophile reaction to form the cyclohexene ring',
     'templates':  [
         #Alkene Template
         {
             'A':  [
+                
+                #Conjugated diene 
+                '[C;D1;z2:1]=[C;z2:2][C;z2:3]=[C;D1;z2:4]',
                 #Conjugated diene-EDG
                 #Conjugated diene-Hetero
-                '[C;D1,D2;x0;z2:1]=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x1;z2:4][O,N,Cl,Br,I;M]',
+                '[C;x0;z2:1]=[C;z2:2][C;z2:3]=[C;x1;z2:4][O,N,Cl,Br,I;M]',
                 #Conjugated diene-Alk
-                '[C;D1,D2;x0;z2:1]=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;x0;z1,z2;M]',
+                '[C;x0;z2:1]=[C;z2:2][C;z2:3]=[C;x0;z2:4][C;z1,z2;M]',
                 #Conjugated diene-Ar
-                '[C;D1,D2;x0;z2:1]=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;a;M]',
+                '[C;x0;z2:1]=[C;z2:2][C;z2:3]=[C;x0;z2:4][C;a;M]',
                 #Conjugated diene C=O-Hetero
-                '[O;D1,D2;x0;z2:1]=[C;x1;z2:2][C;x0;z2:3]=[C;D2;x1;z2:4][O,N,Cl,Br,I;M]',
+                '[O;x0;z2:1]=[C;x1;z2:2][C;z2:3]=[C;x1;z2:4][O,N,Cl,Br,I;M]',
                 #Conjugated diene C=O-Alk
-                '[O;D1,D2;x0;z2:1]=[C;x1;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;x0;z1,z2;M]',
+                '[O;x0;z2:1]=[C;x1;z2:2][C;z2:3]=[C;x0;z2:4][C;z1,z2;M]',
                 #Conjugated diene-Ar
-                '[O;D1,D2;x0;z2:1]=[C;x1;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;a;M]',
+                '[O;x0;z2:1]=[C;x1;z2:2][C;z2:3]=[C;x0;z2:4][C;a;M]',
                 #Cyclopentadiene
-                '[C;D2;x0;z2:1]1=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;x0;z1;M]1'
-                
+                '[C;x0;z2:1]1=[C;z2:2][C;z2:3]=[C;x0;z2:4][C;z1;M]1'
+    
                ],
             'B':  [
+                #Dienophile
+                '[C;D1;x0;z2:5]=[C;D1;x0;z2:6]',
                 #Dienophile-EWG
-                #Dienophile-CHO
-                '[C;D1,D2;x0;z2:5]=[C;D2;x0,x1;z2:6][C;x1,x2;z2;M]=[O;M]',
+                #Dienophile-C=O
+                '[C;D1,D2;z2:5]=[C;D2;x0;z2:6][C;x1,x2;z2;M]=[O;M]',
                 #Dienophile-CO-Alk
-                '[C;D1,D2;x0;z2:5]=[C;D2;x0;z2:6][C;x1;z2;M]-[O;M]',
+                '[C;D1,D2;z2:5]=[C;D2;x0;z2:6][C;x1;z2;M]-[O;M]',
                 #Dienophile-CF3
-                '[C;D1,D2;x0;z2:5]=[C;D2;x0;z2:6][C;x3;z2;M]-[F;M]',
+                '[C;D1,D2;z2:5]=[C;D2;x0;z2:6][C;x3;z2;M]-[F;M]',
                 #Dienophile-C#N
-                '[C;D1,D2;x0;z2:5]=[C;D2;x0;z2:6][C;x1;z3;M]#[N;M]',
+                '[C;D1,D2;z2:5]=[C;D2;x0;z2:6][C;x1;z3;M]#[N;M]',
                 #Dienophile-NO2
-                '[C;D1,D2;x0;z2:5]=[C;D2;x1;z2:6][N+;D3;x2;M][O-;M]',
+                '[C;D1,D2;z2:5]=[C;D2;x1;z2:6][N+;D3;x2;M][O-;M]',
                 #Dienophile-SO3H
-                '[C;D1,D2;x0;z2:5]=[C;D2;x1;z2:6][S;D3;x3;M][O;M]'                
+                '[C;D1,D2;z2:5]=[C;D2;x1;z2:6][S;D3;x3;M][O;M]'                
             ],
           
             'product': '[A:1]1[A:5][A:6][A:4][A:3]=[A:2]1',   
@@ -71,21 +76,23 @@ template = {
         #Alkyne Template
         {
             'A':  [
+                #Conjugated diene 
+                '[C;D1;z2:1]=[C;z2:2][C;z2:3]=[C;D1;z2:4]',
                 #Conjugated diene-EDG
                 #Conjugated diene-Hetero
-                '[C;D1,D2;x0;z2:1]=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x1;z2:4][O,N,Cl,Br,I;M]',
+                '[C;x0;z2:1]=[C;z2:2][C;z2:3]=[C;x1;z2:4][O,N,Cl,Br,I;M]',
                 #Conjugated diene-Alk
-                '[C;D1,D2;x0;z2:1]=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;x0;z1,z2;M]',
+                '[C;x0;z2:1]=[C;z2:2][C;z2:3]=[C;x0;z2:4][C;z1,z2;M]',
                 #Conjugated diene-Ar
-                '[C;D1,D2;x0;z2:1]=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;a;M]',
+                '[C;x0;z2:1]=[C;z2:2][C;z2:3]=[C;x0;z2:4][C;a;M]',
                 #Conjugated diene C=O-Hetero
-                '[O;D1,D2;x0;z2:1]=[C;x1;z2:2][C;x0;z2:3]=[C;D2;x1;z2:4][O,N,Cl,Br,I;M]',
+                '[O;x0;z2:1]=[C;x1;z2:2][C;z2:3]=[C;x1;z2:4][O,N,Cl,Br,I;M]',
                 #Conjugated diene C=O-Alk
-                '[O;D1,D2;x0;z2:1]=[C;x1;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;x0;z1,z2;M]',
+                '[O;x0;z2:1]=[C;x1;z2:2][C;z2:3]=[C;x0;z2:4][C;z1,z2;M]',
                 #Conjugated diene-Ar
-                '[O;D1,D2;x0;z2:1]=[C;x1;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;a;M]',
+                '[O;x0;z2:1]=[C;x1;z2:2][C;z2:3]=[C;x0;z2:4][C;a;M]',
                 #Cyclopentadiene
-                '[C;D2;x0;z2:1]1=[C;x0;z2:2][C;x0;z2:3]=[C;D2;x0;z2:4][C;x0;z1;M]1'
+                '[C;x0;z2:1]1=[C;z2:2][C;z2:3]=[C;x0;z2:4][C;z1;M]1'
                 
                ],
             'B':  [
