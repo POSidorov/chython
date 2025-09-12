@@ -27,7 +27,9 @@ template = {
         {
             'A': [
                 #Hal-Ar
-                '[Cl,Br,I;D1:1]-[C;a:2]'
+                '[Cl,Br,I;D1:1]-[C;a:2]',
+                #Hal-Alkenyl
+                '[Cl,Br,I;D1:1]-[C;D2;x1;z2]=[C;x0;z2;M]'
             ],
             'B': [
                 #C=C-Alk
