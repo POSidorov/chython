@@ -22,17 +22,17 @@
 
 template = {
     'name': 'Gilman Reaction',
-    'description': 'Acid chlorides and α,β-unsaturated carbonyl compounds reaction with Gilman reagents',
+    'description': 'Acid chlorides and α,β-unsaturated carbonyl compounds reaction with Gilman reagents to form C-C bonds',
     'templates': [
         {
             'A': [
                 #α,β-unsaturated ketones
-                '[O;x0;z2;M]=[C;x1;z2;M]([C;x0;z1;M])[C;x0;z2:1]=[C;x0;z2:2]'
+                '[O;D1;x0;z2;M]=[C;x1,x2;z2;M][C;x0;z2:1]=[C;D2;x0;z2:2]'
             ],
             'B':[
                 #Gilman Reagent
-                '[C;x1;z1,z2:3][Cu-;x0:4].[Li+:5]',
-                '[C;a:3][Cu-;x0:4].[Li+:5]'
+                '[C;x1;z1,z2:3][Cu;x0;-:4].[Li;+:5]',
+                '[C;a:3][Cu;-:4].[Li;+:5]'
              ],
             'product': '[A:1][A:2]-[A:3]',
             'alerts': [],
@@ -50,8 +50,8 @@ template = {
             ],
             'B':[
                 #Gilman Reagent
-                '[C;x1;z1,z2:3][Cu-;x0:4][C;x1;z1,z2:5].[Li+:6]',
-                '[C;a:3][Cu-;x0:4][C;a:5].[Li+:6]'
+                '[C;x1;z1,z2:3][Cu;x0;-:4].[Li;+:5]',
+                '[C;a:3][Cu;-:4].[Li;+:5]'
              ],
             'product': '[A:2]-[A:3]',
             'alerts': [],
