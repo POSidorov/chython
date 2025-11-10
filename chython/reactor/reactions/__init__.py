@@ -46,7 +46,7 @@ from ._kabachnik_fields import template as kabachnik_fields_template
 from ._mannich import template as mannich_template
 from ._passerini import template as passerini_template
 from ._pauson_khand import template as pauson_khand_template
-from ._robinson_annulation import as robinson_annulation_template
+from ._robinson_annulation import template as robinson_annulation_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 
