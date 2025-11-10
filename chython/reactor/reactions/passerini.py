@@ -19,37 +19,31 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
-
 template = {
-    'name': 'Heck Reaction',
-    'description': 'C-C coupling between aryl halides or vinyl halides and activated alkenes',
+    'name': 'Passerini Reaction',
+    'description': 'Reaction of carboxylic acid, carbonyl compound and isocyanide to α-hydroxy carboxamides',
     'templates': [
         {
             'A': [
-                #Hal, OTf-Ar
-                '[Cl,Br,I;D1:1]-[C;a:2]',
-                '[S;D4;x3:4][O;x1;z1:1]-[C;a:2]',
-                #Hal, OTf-Alkenyl
-                '[Cl,Br,I;D1:1]-[C;x1;z2:2]=[C;x0;z2;M]',
-                '[S;D4;x3:4][O;x1;z1:1][C;x1;z2:2]=[C;x0;z2;M]'
+                #R-COOH
+                '[O;D1;x0;z1:2][C;D3;x2;z2:1]=[O;x0;z2:3]'
             ],
             'B': [
-                #C=C-Alk
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;x0;z1;M]',
-                #C=C-Ar
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;a;M]',
-                #C=C-Acid
-                '[C;D1;x0;z2:3]=[C;x0,x1;z2;M][C;x2;z2;M]',
-                #Olefines
-                '[C;D2;x0;z2:3]=[C;D3;x0;z2;M]'
-                ],
-                'product': '[A:2]-[A:3]',
-                'alerts': [],
-                'ufe': {
-                'A': 1,
-                'B': 3
+                #Carbonyl
+                '[O;z2;x0:4]=[C;D2,D3;x1;z2:5]'
+            ],
+            'C': [
+                #Isocyanides
+                '[C-;D1;x1;z3:6]#[N+;D2;x0;z3:7]'
+            ],
+            'product': '[A:1](=[A:2])[A:4][A:5][A:6](=[A:3])[A:7]',
+            'alerts': [],
+            'ufe': {
+                'A': '[A:1][A:3]',
+                'B': '[A:4][A:5]',
+                'C': '[A:6][A:7]'
             }
         }
     ],
-    'alerts': []
+    'alerts':[]
 }

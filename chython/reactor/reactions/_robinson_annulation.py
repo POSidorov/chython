@@ -19,35 +19,28 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
-
 template = {
-    'name': 'Heck Reaction',
-    'description': 'C-C coupling between aryl halides or vinyl halides and activated alkenes',
+    'name': 'Robinson Annulation',
+    'description': 'Cyclohexanone reaction with alpha_beta unsaturated ketone',
     'templates': [
         {
             'A': [
-                #Hal, OTf-Ar
-                '[Cl,Br,I;D1:1]-[C;a:2]',
-                '[S;D4;x3:4][O;x1;z1:1]-[C;a:2]',
-                #Hal, OTf-Alkenyl
-                '[Cl,Br,I;D1:1]-[C;x1;z2:2]=[C;x0;z2;M]',
-                '[S;D4;x3:4][O;x1;z1:1][C;x1;z2:2]=[C;x0;z2;M]'
+                #alpha_beta unsaturated ketone
+                '[C;z2;x0:1]=[C;z2;x0:2][C;z2;x1;M](=[O;M])[C;z1;x0:3]'
             ],
-            'B': [
-                #C=C-Alk
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;x0;z1;M]',
-                #C=C-Ar
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;a;M]',
-                #C=C-Acid
-                '[C;D1;x0;z2:3]=[C;x0,x1;z2;M][C;x2;z2;M]',
-                #Olefines
-                '[C;D2;x0;z2:3]=[C;D3;x0;z2;M]'
-                ],
-                'product': '[A:2]-[A:3]',
-                'alerts': [],
-                'ufe': {
-                'A': 1,
-                'B': 3
+            'B':[
+                #Cyclic diKetone
+                '[O;D1;x0;z2:4]=[C;D3;x1;z2;r4,r5,r6,r7,r8:5][C;D3;z1;x0:6]([C;M])[C;z2;x1;M]=[O;M]',
+                #Enolate
+                '[O;D1;x0;z2:4]=[C;D3;x1;z2;r4,r5,r6,r7,r8:5]([C;D2;z1;x0;M])[C;D3;z1;x0:6]',
+                #Cyclohexanone
+                '[O;D1;x0;z2:4]=[C;D3;x1;z2;r4,r5,r6,r7,r8:5]([C;D2;z1;x0;M])[C;D2;z1;x0:6]'
+            ],
+            'product': '[A:2][A:1]-[A:6][A:5]=[A:3]',
+            'alerts': [],
+            'ufe' : {
+                'A': '[A:1][A:2][A:3]',
+                'B': '[A:4][A:5][A:6]'
             }
         }
     ],

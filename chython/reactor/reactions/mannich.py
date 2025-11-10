@@ -19,37 +19,43 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
-
 template = {
-    'name': 'Heck Reaction',
-    'description': 'C-C coupling between aryl halides or vinyl halides and activated alkenes',
+    'name': 'Mannich Reaction',
+    'description': 'Three-component aminomethylation from amine, aldehyde and acidic methylene moiety',
     'templates': [
         {
             'A': [
-                #Hal, OTf-Ar
-                '[Cl,Br,I;D1:1]-[C;a:2]',
-                '[S;D4;x3:4][O;x1;z1:1]-[C;a:2]',
-                #Hal, OTf-Alkenyl
-                '[Cl,Br,I;D1:1]-[C;x1;z2:2]=[C;x0;z2;M]',
-                '[S;D4;x3:4][O;x1;z1:1][C;x1;z2:2]=[C;x0;z2;M]'
+                #Acidic methylene
+                '[O;z2;x0;M]=[C;D3;x1;z2;M][C;x0;z1:1]'
             ],
             'B': [
-                #C=C-Alk
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;x0;z1;M]',
-                #C=C-Ar
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;a;M]',
-                #C=C-Acid
-                '[C;D1;x0;z2:3]=[C;x0,x1;z2;M][C;x2;z2;M]',
-                #Olefines
-                '[C;D2;x0;z2:3]=[C;D3;x0;z2;M]'
-                ],
-                'product': '[A:2]-[A:3]',
+                 #Ar-CHO
+                '[O;z2;x0:2]=[C;D2;x1;z2:3][C;a;M]',
+                #Alkyl-CHO
+                '[O;z2;x0:2]=[C;D2;x1;z2:3][C;z1;M]',
+                #CH2O
+                '[O;z2;x0:2]=[C;D1,D2;x1;z2:3]'
+            ],
+            'C': [
+                # Ar-NH2
+                '[N;D1;x0;z1:4][C;a;M]',
+                # Alk-NH2
+                '[N;D1;x0;z1:4][C;z1;x1;M]',
+                # Ar-NH-Ar
+                '[N;D2;x0;z1:4]([C;a;M])[C;a;M]',
+                # Alk-NH-Ar
+                '[N;D2;x0;z1:4]([C;a;M])[C;z1;x1;M]',
+                # Alk2NH
+                '[N;D2;x0;z1:4]([C;z1;x1;M])[C;z1;x1;M]'
+            ],
+            'product': '[A:1][A:3][A:4]',
                 'alerts': [],
                 'ufe': {
-                'A': 1,
-                'B': 3
+                    'A': 1,
+                    'B': '[A:2][At;M]',
+                    'C': '[A:3][At;M]'
             }
-        }
+        },
     ],
     'alerts': []
 }

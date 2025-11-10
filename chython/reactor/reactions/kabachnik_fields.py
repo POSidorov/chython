@@ -19,37 +19,35 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
-
 template = {
-    'name': 'Heck Reaction',
-    'description': 'C-C coupling between aryl halides or vinyl halides and activated alkenes',
+    'name' : 'Kabachnik Fields Reaction',
+    'description': 'Coupling of a aldehyde, primary amine and a hydrophosphoryl to aminophosphonates',
     'templates': [
         {
             'A': [
-                #Hal, OTf-Ar
-                '[Cl,Br,I;D1:1]-[C;a:2]',
-                '[S;D4;x3:4][O;x1;z1:1]-[C;a:2]',
-                #Hal, OTf-Alkenyl
-                '[Cl,Br,I;D1:1]-[C;x1;z2:2]=[C;x0;z2;M]',
-                '[S;D4;x3:4][O;x1;z1:1][C;x1;z2:2]=[C;x0;z2;M]'
+                # Ar-NH2
+                '[N;D1;x0;z1:1][C;a;M]',
+                # Alk-NH2
+                '[N;D1;x0;z1:1][C;x1;z1;M]'
             ],
             'B': [
-                #C=C-Alk
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;x0;z1;M]',
-                #C=C-Ar
-                '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;a;M]',
-                #C=C-Acid
-                '[C;D1;x0;z2:3]=[C;x0,x1;z2;M][C;x2;z2;M]',
-                #Olefines
-                '[C;D2;x0;z2:3]=[C;D3;x0;z2;M]'
-                ],
-                'product': '[A:2]-[A:3]',
-                'alerts': [],
-                'ufe': {
-                'A': 1,
-                'B': 3
+                #Ar-CHO
+                '[O;x0;z2:2]=[C;D2;x1;z2:3][C;a;M]',
+                #Alk-CHO
+                '[O;x0;z2:2]=[C;D2;x1;z2:3][C;z1;M]'
+            ],
+            'C': [
+                #Hydrophosphoryl
+                '[O;z2;x1;M]=[P;D3:4]([O;z1;x1;M])[O;z1;x1;M]'
+            ],
+            'product': '[A:1][A:3][A:4]',
+            'alerts': [],
+            'ufe': {
+                'A': '[A:1]',
+                'B': '[A:2]',
+                'C': '[A:4][At;M]'
             }
         }
     ],
-    'alerts': []
+    'alerts':[]
 }
