@@ -47,6 +47,9 @@ from ._mannich import template as mannich_template
 from ._passerini import template as passerini_template
 from ._pauson_khand import template as pauson_khand_template
 from ._robinson_annulation import template as robinson_annulation_template
+from ._gewald import template as gewald_template
+from ._petasis import template as petasis_template
+from ._pfitzinger import template as pfitzinger_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 

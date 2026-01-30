@@ -19,7 +19,7 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
-tempalte = {
+template = {
     'name': 'Pfitzinger-Borsche Reaction',
     'description': 'Isatin with base and a carbonyl compound to quinoline-4-carboxylic acids',
     'templates': [
