@@ -29,8 +29,8 @@ template = {
                 '[O;D1;x0;z1:2][C;D3;x2;z2:1]=[O;x0;z2:3]'
             ],
             'B': [
-                #Carbonyl
-                '[O;z2;x0:4]=[C;D2,D3;x1;z2:5]'
+                #Aldehyde
+                '[O;z2;x0:4]=[C;D2;x1;z2:5]'
             ],
             'C': [
                 #Isocyanides
