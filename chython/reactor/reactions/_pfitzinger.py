@@ -25,17 +25,17 @@ template = {
     'templates': [
         {
             'A': [
-                #Isatin
+                # Isatin
                 '[N;D2;x0;z1;r5:1]([C;a;M])[C;D3;x2;z2:2](=[O;M])[C;D3;x1;z2:3]=[O:4]'
             ],
             'B': [
-                #α-Methylene carbonyl
+                # α-Methylene carbonyl
                 '[O;D1;z2;x0:5]=[C;x1;z2:6][C;D2;x0,x1;z1:7]'
             ],
             'C': [
-                #Alk-OH
+                # Alk-OH
                 '[O;D1;x0;z1:8][C;x1;z1;M]',
-                #Base KOH
+                # Base KOH
                 '[O-:8].[K+:9]'
                 ],
                 'product': '[A:1]=[A:6][A:7]=[A:3][A:2][A:8]',

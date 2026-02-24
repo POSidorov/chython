@@ -28,15 +28,15 @@ template = {
        #Template for Intermolecular Pauson-Khand reaction
         {
             'A': [
-                #Alkyne
+                # C#C
                 '[C;x0;z3:1]#[C;x0;z3:2]'
             ],
             'B':[
-                #Alkene
+                # C#C
                 '[C;z2;x0:3]=[C;z2;x0:4]'
             ],
             'C': [
-                #Carbon_monoxide
+                # C#O
                 "[O;+:5]#[C;-:6]"
                 
             ],

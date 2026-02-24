@@ -25,15 +25,15 @@ template = {
     'templates': [
         {
             'A': [
-                #Acidic methylene
+                # Acidic methylene
                 '[O;z2;x0;M]=[C;D3;x1;z2;M][C;x0;z1:1]'
             ],
             'B': [
-                 #Ar-CHO
+                 # Ar-CHO
                 '[O;z2;x0:2]=[C;D2;x1;z2:3][C;a;M]',
-                #Alkyl-CHO
+                # Alkyl-CHO
                 '[O;z2;x0:2]=[C;D2;x1;z2:3][C;z1;M]',
-                #CH2O
+                # CH2O
                 '[O;z2;x0:2]=[C;D1,D2;x1;z2:3]'
             ],
             'C': [

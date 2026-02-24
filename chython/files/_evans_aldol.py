@@ -26,13 +26,13 @@ template = {
     'templates': [
         {
             'A': [
-                #Ar-CHO
+                # Ar-CHO
                 '[O;x0;z2:1]=[C;D2;x1;z2:2][C;a;M]',
-                #Alk-CHO
+                # Alk-CHO
                 '[O;z2;x0:1]=[C;D2;x1;z2:2][C;z1;M]'
             ],
             'B': [
-                #Acylated oxazolidinones
+                # Acylated oxazolidinones
                 '[C;D1,D2;x0;z1:3][C;x2;z2;M](=[O;M])[N;D3;x0;z1;M][C;x3;z2;M;r5]=[O,S;M]'
                 
             ],

@@ -26,11 +26,11 @@ template = {
     'templates': [
         {
             'A': [
-                #α,β-unsaturated ketones
+                # α,β-unsaturated ketones
                 '[O;D1;x0;z2;M]=[C;x1,x2;z2;M][C;x0;z2:1]=[C;D2;x0;z2:2]'
             ],
             'B':[
-                #Gilman Reagent
+                # Gilman Reagent
                 '[C;x1;z1,z2:3][Cu;x0;-:4].[Li;+:5]',
                 '[C;a:3][Cu;-:4].[Li;+:5]'
              ],
@@ -43,13 +43,13 @@ template = {
         },
         {
             'A': [
-                #Acid Chloride-Alk
+                # Acid Chloride-Alk
                 '[Cl;D1:1][C;D3;x2;z2:2]([C;x0;z1;M])=[O;M]',
-                #Acid Chloride-Ar
+                # Acid Chloride-Ar
                 '[Cl;D1:1][C;D3;x2;z2:2]([C;a;M])=[O;M]',
             ],
             'B':[
-                #Gilman Reagent
+                # Gilman Reagent
                 '[C;x1;z1,z2:3][Cu;x0;-:4].[Li;+:5]',
                 '[C;a:3][Cu;-:4].[Li;+:5]'
              ],

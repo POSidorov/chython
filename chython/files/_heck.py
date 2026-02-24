@@ -26,29 +26,29 @@ template = {
     'templates': [
         {
             'A': [
-                #Hal, OTf-Ar
+                # Hal, OTf-Ar
                 '[Cl,Br,I;D1:1]-[C;a:2]',
                 '[S;D4;x3:4][O;x1;z1:1]-[C;a:2]',
-                #Hal, OTf-Alkenyl
+                # Hal, OTf-Alkenyl
                 '[Cl,Br,I;D1:1]-[C;x1;z2:2]=[C;x0;z2;M]',
                 '[S;D4;x3:4][O;x1;z1:1][C;x1;z2:2]=[C;x0;z2;M]'
             ],
             'B': [
-                #C=C-Alk
+                # C=C-Alk
                 '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;x0;z1;M]',
-                #C=C-Ar
+                # C=C-Ar
                 '[C;D1;x0;z2:3]=[C;D2;x0;z2;M][C;a;M]',
-                #C=C-Acid
+                # C=C-Acid
                 '[C;D1;x0;z2:3]=[C;x0,x1;z2;M][C;x2;z2;M]',
-                #Olefines
+                # Olefines
                 '[C;D2;x0;z2:3]=[C;D3;x0;z2;M]'
-                ],
-                'product': '[A:2]-[A:3]',
-                'alerts': [],
-                'ufe': {
-                'A': 1,
-                'B': 3
-            }
+            ],
+            'product': '[A:2]-[A:3]',
+            'alerts': [],
+            'ufe': {
+            'A': 1,
+            'B': 3
+           }
         }
     ],
     'alerts': []

@@ -26,13 +26,13 @@ template = {
     'templates': [
         {
             'A': [
-                #Ar-CHO
+                # Ar-CHO
                 '[O;x0;z2:1]=[C;D2;x1;z2:2][C;a;M]',
-                #Alk-CHO
+                # Alk-CHO
                 '[O;x0;z2:1]=[C;D2;x1;z2:2][C;z1;M]'
             ],
             'B': [
-                #Phosphonate
+                # Phosphonate
                 '[C;x1;z1:3][O:4][P:5](=O)([O:6][C;x1;z1:7])[C;D2,D3;z1;x1:8][C;z2;x2;M]'
             ],
             'product': '[A:2]=[A:8]',

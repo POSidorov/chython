@@ -26,17 +26,17 @@ template = {
     'templates': [
         {
             'A': [
-                #Ar-CHO
+                # Ar-CHO
                 '[O;z2;x0:1]=[C;D2;x1;z2:2][C;a;M]',
-                #Alk-CHO
+                # Alk-CHO
                 '[O;z2;x0:1]=[C;D2;x1;z2:2][C;z1;M]'
             ],
             'B': [
-                #ß-ketoester
+                # ß-ketoester
                 '[O;z2;x0:3]=[C;D3;x1;z2:4][C;D2;x0;z1:5][C;D3;x2;z2;M](=[O;z2;x0;M])[O;D2;x0;M]'
             ],
             'C': [
-                #ß-ketoester
+                # ß-ketoester
                 '[O;z2;x0:6]=[C;D3;x1;z2:7][C;D2;x0;z1:8][C;D3;x2;z2;M](=[O;z2;x0;M])[O;D2;x0;M]'
             ],
             'D': [

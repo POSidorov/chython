@@ -26,11 +26,11 @@ template = {
     'templates': [
         {
             'A': [
-                #Divinyl Ketone
+                # Divinyl Ketone
                 '[C;x0,x1;z2:1]=[C;x0,x1;z2:2][C;x1;z2;M]([C;x0,x1;z2;M]=[C;x0,x1;z2:4])=[O;M]',
-                #Divinyl Dione
+                # Divinyl Dione
                 '[C;z2;x0,x1:1]=[C;z2;x0,x1:2][C;z2;x1;M]([C;z2;x0,x1;M]=[O;z2;x0:4])=[O;M]',
-                #Divinyl-Ar
+                # Divinyl-Ar
                 '[C;z2;x0,x1:1]=[C;z2;x0,x1:2][C;z2;x1;M](=[O;M])[C;a;M]:[C;a:4]'
             ],
             'product': '[A:4][A:1][A:2]',

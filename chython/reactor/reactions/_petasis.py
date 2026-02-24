@@ -37,9 +37,9 @@ template = {
                 '[N;D2;x0;z1:1]([C;z1;x1;M])[C;z1;x1;M]'
             ],
             'B': [
-                #Ar-CHO
+                # Ar-CHO
                 '[O;z2;x0:2]=[C;D2,D3;x1;z2:3][C;a;M]',
-                #Alk-CHO
+                # Alk-CHO
                 '[O;z2;x0:2]=[C;D2,D3;x1;z2:3][C;z1,z2;M]'
             ],
             'C': [

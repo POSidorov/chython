@@ -25,15 +25,15 @@ template = {
     'templates': [
         {
             'A': [
-                #alpha_beta unsaturated ketone
+                # α,β-Unsaturated ketone
                 '[C;z2;x0:1]=[C;z2;x0:2][C;z2;x1;M](=[O;M])[C;z1;x0:3]'
             ],
             'B':[
-                #Cyclic diKetone
+                # Cyclic diKetone
                 '[O;D1;x0;z2:4]=[C;D3;x1;z2;r4,r5,r6,r7,r8:5][C;D3;z1;x0:6]([C;M])[C;z2;x1;M]=[O;M]',
-                #Enolate
+                # Enolate
                 '[O;D1;x0;z2:4]=[C;D3;x1;z2;r4,r5,r6,r7,r8:5]([C;D2;z1;x0;M])[C;D3;z1;x0:6]',
-                #Cyclohexanone
+                # Cyclohexanone
                 '[O;D1;x0;z2:4]=[C;D3;x1;z2;r4,r5,r6,r7,r8:5]([C;D2;z1;x0;M])[C;D2;z1;x0:6]'
             ],
             'product': '[A:2][A:1]-[A:6][A:5]=[A:3]',

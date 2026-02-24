@@ -25,15 +25,15 @@ template = {
     'templates': [
         {
             'A': [
-                #R-COOH
+                # R-COOH
                 '[O;D1;x0;z1:2][C;D3;x2;z2:1]=[O;x0;z2:3]'
             ],
             'B': [
-                #Aldehyde
-                '[O;z2;x0:4]=[C;D2;x1;z2:5]'
+                # Alk-CHO
+                '[O;z2;x0:4]=[C;D2;x1;z2:5][C,N;z1;M]'
             ],
             'C': [
-                #Isocyanides
+                # Isocyanides
                 '[C-;D1;x1;z3:6]#[N+;D2;x0;z3:7]'
             ],
             'product': '[A:1](=[A:2])[A:4][A:5][A:6](=[A:3])[A:7]',

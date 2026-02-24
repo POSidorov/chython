@@ -31,13 +31,13 @@ template = {
                 '[N;D1;x0;z1:1][C;x1;z1;M]'
             ],
             'B': [
-                #Ar-CHO
+                # Ar-CHO
                 '[O;x0;z2:2]=[C;D2;x1;z2:3][C;a;M]',
-                #Alk-CHO
+                # Alk-CHO
                 '[O;x0;z2:2]=[C;D2;x1;z2:3][C;z1;M]'
             ],
             'C': [
-                #Hydrophosphoryl
+                # Hydrophosphoryl
                 '[O;z2;x1;M]=[P;D3:4]([O;z1;x1;M])[O;z1;x1;M]'
             ],
             'product': '[A:1][A:3][A:4]',

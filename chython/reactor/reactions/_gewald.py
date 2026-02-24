@@ -25,15 +25,15 @@ template = {
     'templates': [
         {
             'A': [
-                #α-Methylene carbonyl
+                # α-Methylene carbonyl
                 '[O;D1;z2:1]=[C;z2:2][C;D2;x0;z1:3]'
             ],
             'B': [
-                #α-Cyanoester
+                # α-Cyanoester
                 '[C;D2;x0;z1:4]([C;x2;z2;M](=[O;M])[O;M])[C;x1;z3:5]#[N;x0;z3:6]'
             ],
             'C': [
-                #Sulfur-S8
+                # Sulfur-S8
                 '[S;D2;x2;z1;r8:7]([S;D2;x2;z1:8])[S;D2;x2;z1:9]'
             ],
             'product': '[A:3]1=[A:2][A:4]=[A:5]([A:6])[A:7]1',
