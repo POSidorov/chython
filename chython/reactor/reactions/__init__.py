@@ -50,6 +50,16 @@ from ._robinson_annulation import template as robinson_annulation_template
 from ._gewald import template as gewald_template
 from ._petasis import template as petasis_template
 from ._pfitzinger import template as pfitzinger_template
+from ._arndt_eistert import template as arndt_eistert_template
+from ._baeyer_villiger import template as baeyer_villiger_template
+from ._baeyer_mills import template as baeyer_mills_template
+from ._balz_schiemann import template as balz_schiemann_template
+from ._baylis_hillman import template as baylis_hillman_template
+from ._beckmann import as beckmann_template
+from ._chan_lam import as chan_lam_template
+from ._click import as click_template
+from ._doebner_miller import as doebner_miller_template
+from ._eschenmoser import as eschenmoser_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 
