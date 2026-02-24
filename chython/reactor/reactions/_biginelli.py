@@ -26,17 +26,17 @@ template = {
     'templates' : [
         {
             'A':  [
-                #Ar-CHO
+                # Ar-CHO
                 '[O;z2;x0:1]=[C;D2;x1;z2:2][C;a;M]'
             ],
             'B':  [
-                #Urea
+                # Urea
                 '[N;D1;x0;z1:3][C;D3;x3;z2:4](=[O,S;M])[N;D1;x0;z1:5]',  
             ],
             'C':  [
-                #β-Dicarbonyl
+                # β-Dicarbonyl
                 '[O;z2;x0:6]=[C;D3;x1;z2:7][C;D2;x0;z1:8][C;D3;x2;z2;M](=[O;z2;x0;M])[O;D2;x0;M]',
-                #Cyclohexane-1,3-dione
+                # Cyclohexane-1,3-dione
                 '[O;x0;z2:6]=[C;D3;x1;z2:7][C;D2;x0;z1:8][C;D3;x1,x2;z2;r6;M]=[O;x0;z2;M]'
             ],
             'product': '[A:2]1[A:3][A:4][A:5][A:7]=[A:8]1',

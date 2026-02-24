@@ -27,7 +27,7 @@ template = {
         # Template 1: Ester and DIBAL-H to CHO
         {
             'A': [
-                #Ester
+                # Ester
                 '[O;x0;z2;M]=[C;D3;x2;z2:1][O;D2;x0;z1:2]'
             ],
             'product': '[A:1]',
@@ -39,7 +39,7 @@ template = {
         # Template 2: Nitriles and DIBAL-H to CHO
        {
             'A': [
-                #Nitrile
+                # Nitrile
                 '[N;D1;z3;x0:2]#[C;D2;x1;z3:1]'
             ],        
             'product': '[A:1]=[O]',
