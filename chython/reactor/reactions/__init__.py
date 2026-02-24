@@ -55,11 +55,11 @@ from ._baeyer_villiger import template as baeyer_villiger_template
 from ._baeyer_mills import template as baeyer_mills_template
 from ._balz_schiemann import template as balz_schiemann_template
 from ._baylis_hillman import template as baylis_hillman_template
-from ._beckmann import as beckmann_template
-from ._chan_lam import as chan_lam_template
-from ._click import as click_template
-from ._doebner_miller import as doebner_miller_template
-from ._eschenmoser import as eschenmoser_template
+from ._beckmann import template as beckmann_template
+from ._chan_lam import template as chan_lam_template
+from ._click import template as click_template
+from ._doebner_miller import template as doebner_miller_template
+from ._eschenmoser import template as eschenmoser_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 
