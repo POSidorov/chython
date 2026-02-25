@@ -21,20 +21,20 @@
 
 
 template = {
-    'name': 'Wurtz Reaction',
-    'description': 'Coupling of two alkyl halides to form symmetrical alkanes',
+    'name':'Wurtz Fittig reaction',
+    'description': 'Coupling of aryl halide and alkyl halide to form the substituted aromatic compounds',
     'templates' : [
         {
-            'A': [
-                # X-Alk
-                '[Cl,Br,I;D1:1]-[C;D1,D2;x1;z1:2]' 
-                ],
-            'B': [
+            'A':  [
+                # X-Ar
+                '[Cl,Br,I;D1:1]-[C;a:2]'
+            ],
+            'B':  [
                 # X-Alk
                 '[Cl,Br,I;D1:3]-[C;D1,D2;x1;z1:4]'
-            ],
-            'product': '[A:2]-[A:4]',
-            'alerts': [],
+                ],
+                'product': '[A:2]-[A:4]',
+                'alerts': [],
             'ufe': {
                 'A': 1,
                 'B': 3
