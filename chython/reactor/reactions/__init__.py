@@ -70,6 +70,16 @@ from ._paal_knorr_pyrrole import template as paal_knorr_pyrrole_template
 from ._perkin import template as perkin_template
 from ._pictet_spengler import template as pictet_spengler_template
 from ._prins_pinacol import template as prins_pinacol_template
+from ._reformatsky import template as reformatsky_template
+from ._riley_oxidations import template as riley_oxidations_template
+from ._sandmayer import template as sandmayer_template
+from ._schotten_baumann import template as schotten_baumann_template
+from ._stille_coupling import template as stille_coupling_template
+from ._ullmann import template as ullmann_template
+from ._wittig import template as wittig_template
+from ._wolff_rearrangement import template as wolff_rearrangement_template
+from ._wurtz import template as wurtz_template
+from ._wurtz_fittig import template as wurtz_fittig_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 
