@@ -60,6 +60,16 @@ from ._chan_lam import template as chan_lam_template
 from ._click import template as click_template
 from ._doebner_miller import template as doebner_miller_template
 from ._eschenmoser import template as eschenmoser_template
+from ._ester_hydrolysis import template as ester_hydrolysis_template
+from ._fischer_indole import template as fischer_indole_template
+from ._gould_jacobs import template as gould_jacobs_template
+from ._hayashi_miyaura import template as hayashi_miyaura_template
+from ._knorr_quinoline import template as knorr_quinoline_template
+from ._olefin_metathesis import template as olefin_metathesis_template
+from ._paal_knorr_pyrrole import template as paal_knorr_pyrrole_template
+from ._perkin import template as perkin_template
+from ._pictet_spengler import template as pictet_spengler_template
+from ._prins_pinacol import template as prins_pinacol_template
 from ..reactor import Reactor, fix_mapping_overlap
 from ... import smarts, ReactionContainer, MoleculeContainer
 
