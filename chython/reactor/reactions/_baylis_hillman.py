@@ -30,8 +30,12 @@ template = {
                 '[O;z2;x0:1]=[C;D1,D2;x1;z2:2]'
             ],
             'B': [
-                # Activated alkene
-                '[C;x0;z2;M]=[C;D2;x0;z2:3][C,S;x1,x2;z2;M]'
+                # C=C-EWG
+                '[C;D1;x0;z2;M]=[C;D2;x0;z2:3][C;x1,x2;z2;M]=[O;M]',
+                # Alk-C=C-EWG
+                '[C;x0;z1;M][C;x0;z2;M]=[C;D2;x0;z2:3][C;x1,x2;z2;M]=[O;M]',
+                # C=C-SO2R
+                '[C;x0;z2;M]=[C;D2;x1;z2:3][S;x2;z3;M]=[O;M]'
             ],
             'product': '[A:1][A:2]-[A:3]',
             'alerts': [],
@@ -43,3 +47,4 @@ template = {
     ],
     'alerts': []
 }
+
