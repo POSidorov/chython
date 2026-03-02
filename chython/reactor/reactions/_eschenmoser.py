@@ -22,16 +22,16 @@
 
 template = {
     'name' : 'Eschenmoser Coupling',
-    'description': 'S-alkylation of thioamides and gives enamine products',
+    'description': 'thioamide and an α-halocarbonyl compound to enaminones products',
     'templates': [
         {
             'A': [
-                # S=C-N
+                # S=C-N-R
                 '[S;D1;x0;z2:1]=[C;D3;x2;z2:2][N;x0;z1;M]'
             ],
             'B': [
-                # Br-Alk
-                '[Br;D1:3]-[C;D2,D3;x1;z1:4]'
+                # Br-CC(=O)-R
+                '[Br;D1:3]-[C;D2,D3;x1;z1:4][C;x1,x2;z2;M](=[O;M])'
             ],
             'product': '[A:2]=[A:4]',
             'alerts': [],
