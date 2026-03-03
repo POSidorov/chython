@@ -30,12 +30,12 @@ template = {
                 '[S;D1;x0;z2:1]=[C;D3;x2;z2:2][N;x0;z1;M]'
             ],
             'B': [
-                # Br-CC(=O)-OR
-                '[Br;D1:3][C;D2;x1;z1:4][C;x2;z2;M](=[O;M])[O;M]',
-                # EWG-CBr-EWG
+                # Br-CC(=O)R
+                '[Br;D1:3][C;D2;x1;z1:4][C;z2;M]=[O;M]',
+                # COOR-CBr-COOR
                 '[O;M][C;x2;z2;M](=[O;M])[C;D3;x1;z1:4]([Br;D1:3])[C;x2;z2;M](=[O;M])[O;M]',
                 # 3-bromoindolin-2-one
-                '[Br;D1:3]-[C;D3;x1;z1:4]([C;a;M])[C;x2;z2;M](=[O;M])[N;M]'
+                '[Br;D1:3]-[C;D3;x1;z1:4]([C;a;M])[C;x2;z2;M](=[O;M])[N;h1;M]'
             ],
             'product': '[A:2]=[A:4]',
             'alerts': [],
