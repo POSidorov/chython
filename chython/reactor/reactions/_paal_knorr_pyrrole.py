@@ -26,7 +26,7 @@ template = {
     'templates': [
         {
             'A': [
-                # 1,4-dicarbonyl
+                # 1,4-diketones
                 '[O;x0;z2:2]=[C;x1;z2:1][C;x0;z1:3][C;x0;z1:4][C;x1;z2:5]=[O;x0;z2:6]'
             ],
             'B': [
