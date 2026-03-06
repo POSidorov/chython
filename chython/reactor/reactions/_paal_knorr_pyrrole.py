@@ -21,7 +21,7 @@
 
 
 template = {
-    'name': 'Paal Knorr Pyrrole Synthesis',
+    'name': 'Paal-Knorr Pyrrole Synthesis',
     'description': '1,4-dicarbonyl compound with a primary amine or ammonia to pyrrole',
     'templates': [
         {
@@ -36,12 +36,12 @@ template = {
                 '[N;D1;x0;z1:7][C;z1;x1;M]'
             ],
             'product': '[A:1]1=[A:3][A:4]=[A:5][A:7]1',
-                'alerts': [],
-                'ufe': {
-                    'A': '[A:2][A:6]',
-                    'B': 7
-                }
+            'alerts': [],
+            'ufe': {
+                'A': '[A:2][A:6]',
+                'B': 7
             }
+        }
     ],
     'alerts': []
 }
