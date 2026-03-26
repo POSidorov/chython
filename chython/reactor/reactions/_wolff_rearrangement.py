@@ -23,27 +23,29 @@
 template = {
     'name' : 'Wolff Rearrangement',
     'description': 'Diazoketone in to a ketene and ring constraction',
-    'templates': [
+    'templates' : [
         {
-            'A': [
-                  # H-Diazoketone
-                  '[N-;z2;x1:1]=[N+;x1;z3:2]=[C;x1;z2:3][C;x1;z2:4](=[O;M])[H:5]',
-                  # Ar-Diazoketone
-                  '[N-;z2;x1:1]=[N+;x1;z3:2]=[C;x1;z2:3][C;x1;z2:4](=[O;M])[C;a:5]',
-                  # Alk-Diazoketone
-                  '[N-;z2;x1:1]=[N+;x1;z3:2]=[C;x1;z2:3][C;x1;z2:4](=[O;M])[C;z1:5]',
-                 ],
-            'B': [
-                  # CH2OH
-                '[C;x1;z1;M][O;D1;z1:6]'
+            'A':  [
+                # H-Diazoketone
+                '[N-;z2;x1:1]=[N+;x1;z3:2]=[C;x1;z2:3][C;x1;z2:4](=[O;M])[H:5]',
+                # Ar-Diazoketone
+                '[N-;z2;x1:1]=[N+;x1;z3:2]=[C;x1;z2:3][C;x1;z2:4](=[O;M])[C;a:5]',
+                # Alk-Diazoketone
+                '[N-;z2;x1:1]=[N+;x1;z3:2]=[C;x1;z2:3][C;x1;z2:4](=[O;M])[C;z1:5]'
+            ],
+            'B':  [
+                # MeOH
+                '[C;D1;x1;z1;M][O;D1;z1:6]',
+                # EtOH
+                '[C;D1;x0;z1;M][C;D2;x1;z1;M][O;D1;z1:6]'
             ],
             'product': '[A:5][A:3][A:4][A:6]',
             'alerts': [],
-            'ufe': {
-                'A': 1,
-                'B': '[A:6]'
+                'ufe': {
+                    'A': 1,
+                    'B': '[A:6]'
+                }
             }
-        }
-    ],
-    'alerts':[]
+        ],
+        'alerts':[]
 }
