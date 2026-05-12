@@ -22,39 +22,15 @@
 #SMARST for Intramolecular aklyne and alkene Pauson-Khand reaction
 smarts_A = ['[C;x0;z3:1]#[C;x0;z3:2][C;z1;M]' + '[A;M]'*x + '[C;z1;M][C;z2;x0:3]=[C;z2;x0:4]' for x in range(1,20)]
 template = {
-    'name': 'Pauson Khand Reaction',
-    'description': 'Alkyne, alkene and carbon monoxide combine into a α,β-cyclopentenone',
-    'templates': [
-       #Template for Intermolecular Pauson-Khand reaction
+    'name': 'Pauson-Khand Reaction',
+    'description': 'Alkyne,alkene, and carbon monoxide combine into a α,β-cyclopentenone',
+    'templates': [       
         {
-            'A': [
-                # C#C
-                '[C;x0;z3:1]#[C;x0;z3:2]'
-            ],
-            'B':[
-                # C#C
-                '[C;z2;x0:3]=[C;z2;x0:4]'
-            ],
-            'C': [
-                # C#O
-                "[O;+:5]#[C;-:6]"
-                
-            ],
-            'product': '[A:1]1=[A:2][A:3][A:4][A:6]1=[A:5]',
-               'alerts':[],
-               'ufe':{
-                   'A':'[A:1][A:2]',
-                   'B':'[A:3][A:4]',
-                   'C':'[A:5][A:6]'
-               }
-       },
-        #Template for Intramolecular Pauson-Khand reaction
-       
-        {
-            'A': smarts_A,
+            'A': # Intramolcular Alkyne and alkene
+                smarts_A,
             
             'B':[
-                #Carbon_monoxide
+                # C#O
                 "[O;+:5]#[C;-:6]"
             ],
             'product': '[A:1]1=[A:2][A:3][A:4][A:6]1=[A:5]',
@@ -63,7 +39,7 @@ template = {
                    'A':'[A:1][A:2][A:3][A:4]',
                    'B':'[A:5][A:6]'
                }
-           } 
+        } 
     ],
     'alerts': []
 }
