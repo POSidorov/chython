@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2021-2023 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2021-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -17,10 +17,9 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 from lazy_object_proxy import Proxy
-from ...periodictable import ListElement
 
 
-def _rules_single():
+def _rules():
     """
     rules without overlapping. these rules can match once to same set of atoms.
     """
@@ -505,6 +504,34 @@ def _rules_single():
     rules.append((q, atom_fix, bonds_fix, False))
 
     #
+    # fix pyrylium dearomatization. restore O+ in aromatic ring from N+ form.
+    # e.g. O1C(=[NH+]...)... -> [O+]1=C(N...)...
+    #
+    q = smarts('[O;D2;r6]1[C;z2](=[N;+])[A;z2]-,=[A;z2]-,=[A;z2]-,=[A;z2]1')
+    atom_fix = {1: (1, None), 3: (-1, None)}
+    bonds_fix = ((1, 2, 2), (2, 3, 1))
+    rules.append((q, atom_fix, bonds_fix, False))
+
+    #
+    # 6-membered ring amidation (kekule form: OH on C with C=N in ring)
+    # e.g. OC1=CC=NC=N1 >> O=C1NC=NC=C1 (pyrimidinone)
+    #      OC1=CC=CC=N1 >> O=C1NC=CC=C1 (pyridinone)
+    #
+    q = smarts('[O,S;D1;z1;x0]-[C;r6;z2]=2[N;z2]=[A;z2][A;z2]=[A;z2][A;z2]=2')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 2), (2, 7, 1), (3, 4, 1), (4, 5, 2), (5, 6, 1), (6, 7, 2))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    #
+    # 6-membered ring 1,3-diketone amidation (one N already sp3)
+    # e.g. OC1=NC(=O)NC=C1 >> O=C1NC=CC(=O)N1 (uracil kekule)
+    #
+    q = smarts('[O,S;D1;z1;x0]-[C;r6;z2]=2[N;z1][C;z2][N;z2]=[A;z2][A;z2]=2')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 2), (2, 7, 1), (7, 6, 2), (6, 5, 1))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    #
     #      [O,S]H    [O,S]
     #      /         //
     # N = C  >> NH - C
@@ -515,43 +542,12 @@ def _rules_single():
     rules.append((q, atom_fix, bonds_fix, True))
 
     #
-    # fix pyridin-2-one. note: only after amide rule
+    # 6-membered ring hydroxypyridine to pyridone
+    # e.g. OC1=CC=NC=C1 >> O=C1C=CNC=C1 (4-pyridone)
     #
-    q = smarts('[O,S,N;D1;z2;x0]=[C;D3;r6]1[N;D2;z1][A;z2]-,=[A;z2][A;z2]-,=[A;z2]1')
+    q = smarts('[O,S;D1;z1;x0]-[C;r6;z2]1=[A;z2][A;z2]=[N;D2][A;z2]-,=[A;z2]1')
     atom_fix = {}
-    bonds_fix = ((1, 2, 1), (2, 3, 2))
-    rules.append((q, atom_fix, bonds_fix, True))
-
-    #
-    # fix pyridin-2-imine
-    #
-    q = smarts('[N;D2;z2;!R]=[C;D3;r6]1[N;D2;z1][A;z2]-,=[A;z2][A;z2]-,=[A;z2]1')
-    atom_fix = {}
-    bonds_fix = ((1, 2, 1), (2, 3, 2))
-    rules.append((q, atom_fix, bonds_fix, True))
-
-    #
-    # fix pyridin-4-one
-    #
-    q = smarts('[O,S;D1;z2;x0]=[C;D3;r6]1[A;z2]=[A;z2][N;D2;z1][A;z2]-,=[A;z2]1')
-    atom_fix = {}
-    bonds_fix = ((1, 2, 1), (2, 3, 2), (3, 4, 1), (4, 5, 2))
-    rules.append((q, atom_fix, bonds_fix, True))
-
-    # todo:
-    # [C;a:10][N;H:2][N:3]=[C:4]1[C:5]=,:[C:6][C:7](=[O:1])[C:8]=,:[C:9]1
-    # [C;a:10][N;H:2][N:3]=[C:4]1[C:5](=[O:1])[C:6]=,:[C:7]-,:[C:8]=,:[C:9]1
-
-    #
-    #       OH          O
-    #      /           //
-    # C = C    >> C - C
-    #      \           \
-    #      [O,N]       [O,N]
-    #
-    q = smarts('[O;D1;x0;z1]-[C;D3;z2;x2](-[O,N])=C')
-    atom_fix = {}
-    bonds_fix = ((1, 2, 2), (2, 4, 1))
+    bonds_fix = ((1, 2, 2), (2, 3, 1), (3, 4, 2), (4, 5, 1))
     rules.append((q, atom_fix, bonds_fix, True))
 
     # acyclic keto-enol
@@ -564,20 +560,60 @@ def _rules_single():
     bonds_fix = ((1, 2, 2), (2, 3, 1))
     rules.append((q, atom_fix, bonds_fix, True))
 
+    # 5-membered ring amidation (short flip, N adjacent to C=N)
+    # e.g. CN1C=CC(O)=N1 >> CN1NC(=O)C=C1
     #
-    # fix pyridin. note: don't move.
-    #
-    q = smarts('[O,S,N;D1;z2;x0]=[C;D3;r6]1[N;D2;z2]=[A;z2][A;z2]-,=[A;z2][C;D2,D3;z1]1')
+    q = smarts('[O,S;D1;z1;x0]-[C;r5;z2]1=N[N;z1][A;z2]-,=[A;z2]1')
     atom_fix = {}
-    bonds_fix = ((1, 2, 1), (2, 7, 2))
+    bonds_fix = ((1, 2, 2), (2, 3, 1))
     rules.append((q, atom_fix, bonds_fix, True))
 
+    # 5-membered ring amidation (long flip, N far from C=N)
+    # e.g. CN1N=CC=C1O >> CN1NC=CC1=O
     #
-    # fix pyridin amine.
-    #
-    q = smarts('[N;D2;z2;!R]=[C;D3;r6]1[N;D2;z2]=[A;z2][A;z2]-,=[A;z2][C;D2,D3;z1]1')
+    q = smarts('[O,S;D1;z1;x0]-[C;r5;z2]1=[A;z2][A;z2]=N[N;z1]1')
     atom_fix = {}
-    bonds_fix = ((1, 2, 1), (2, 7, 2))
+    bonds_fix = ((1, 2, 2), (2, 3, 1), (3, 4, 2), (4, 5, 1))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    # 6-membered ring N=C-CH adjacent to C=O (short flip)
+    # e.g. O=C1C=CCC=N1 >> O=C1NC=CC=C1
+    #
+    q = smarts('[N;r6;z2]1=[A;z2][C;h1,h2][A;z2]-,=[A;z2]C1=O')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 1), (2, 3, 2))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    # 6-membered ring N=C-C=C-CH adjacent to C=O (long flip)
+    # e.g. O=C1CC=CC=N1 >> O=C1NC=CC=C1
+    #
+    q = smarts('[N;r6;z2]1=[A;z2][A;z2]=[A;z2][C;h1,h2]C1=O')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 1), (2, 3, 2), (3, 4, 1), (4, 5, 2))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    # 6-membered ring N=C-CH adjacent to C=O (C=O between CH and ring end)
+    # e.g. O=C1CC=NC=C1 >> O=C1C=CNC=C1
+    #
+    q = smarts('[N;r6;z2]1=[A;z2][C;h1,h2]C(=O)[A;z2]-,=[A;z2]1')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 1), (2, 3, 2))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    # 5-membered ring N=C-CH >> NH-C=C
+    # e.g. C1C=NC=N1 >> N1C=CN=C1
+    #
+    q = smarts('[N;r5;z2]1=[A;z2][C;h1,h2][A;z2]-,=[A;z2]1')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 1), (2, 3, 2))
+    rules.append((q, atom_fix, bonds_fix, True))
+
+    # 5-membered ring N=C-CH with sp3 N,O closure
+    # e.g. CN1N=CCC1=O >> CN1NC=CC1=O
+    #
+    q = smarts('[N;r5;z2]1=[A;z2][C;h1,h2][A;z2][N,O;z1]1')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 1), (2, 3, 2))
     rules.append((q, atom_fix, bonds_fix, True))
 
     #
@@ -805,6 +841,19 @@ def _rules_single():
     rules.append((q, atom_fix, bonds_fix, True))
 
     #
+    #     [OH]                O
+    #      |                 //
+    #  N = S = A  >>  [NH] - S = A   (duplicated for overlapping groups)
+    #      |                 |
+    #      A                 A
+    #
+    q = smarts('[S;D4;z3:1]([O;D1:2])(=[N;D1,D2;z2:3])(=[A])[A]')
+    atom_fix = {}
+    bonds_fix = ((1, 2, 2), (1, 3, 1))
+    rules.append((q, atom_fix, bonds_fix, True))
+    rules.append((q, atom_fix, bonds_fix, True))  # second shot for overlapping groups
+
+    #
     # C # C - [O,NH,S]H  >> C=C=[O,NH,S]
     #
     q = smarts('[C;D2;z3;x1]([N,O,S;D1])#[C;D1,D2]')
@@ -897,30 +946,7 @@ def _rules_single():
             for q, atom_fix, bonds_fix, is_tautomer in rules]
 
 
-def _rules_double():
-    from ... import smarts
-
-    rules = []
-
-    #
-    #     [OH]                O
-    #      |                 //
-    #  N = S = A  >>  [NH] - S = A
-    #      |                 |
-    #      A                 A
-    #
-    q = smarts('[S;D4;z3:1]([O;D1:2])(=[N;D1,D2;z2:3])(=[A])[A]')
-    atom_fix = {}
-    bonds_fix = ((1, 2, 2), (1, 3, 1))
-    rules.append((q, atom_fix, bonds_fix, True))
-
-    return [(q, atom_fix, bonds_fix,
-             [n for n, a in q.atoms() if a.atomic_symbol == 'A' and n not in atom_fix], is_tautomer)
-            for q, atom_fix, bonds_fix, is_tautomer in rules]
+rules = Proxy(_rules)
 
 
-single_rules = Proxy(_rules_single)
-double_rules = Proxy(_rules_double)
-
-
-__all__ = ['single_rules', 'double_rules']
+__all__ = ['rules']

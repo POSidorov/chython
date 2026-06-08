@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 # cython: language_level=3
+# cython: freethreading_compatible=True
 #
-#  Copyright 2021-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2021-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -118,6 +118,8 @@ def unpack(const unsigned char[::1] data not None):
 
         atomic_number = b & 0x7f
         py_atom = object.__new__(elements[atomic_number])
+        py_atom._extended_stereo = None
+        py_atom._parsed_mapping = None
         py_n = n
         py_atoms[py_n] = py_atom
         py_bonds[py_n] = {}
@@ -269,12 +271,12 @@ common_isotopes[:] = [0, -15, -12, -9, -7, -5, -4, -2, 0, 3, 4, 7, 8, 11, 12, 15
                       222, 221, 228, 227, 231, 231, 235, 236, 241, 242, 243, 244, 245, 254, 253, 254,
                       254, 262, 265, 265, 269, 262, 273, 273, 277, 281, 278]
 
-cdef list elements
-elements = [None, H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co,
+cdef tuple elements
+elements = (None, H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co,
             Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr, Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
             Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg,
             Tl, Pb, Bi, Po, At, Rn, Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg,
-            Bh, Hs, Mt, Ds, Rg, Cn, Nh, Fl, Mc, Lv, Ts, Og]
+            Bh, Hs, Mt, Ds, Rg, Cn, Nh, Fl, Mc, Lv, Ts, Og)
 
 
 cdef double double_from_bytes(unsigned char a, unsigned char b):

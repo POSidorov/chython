@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2021-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2021-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -17,14 +17,10 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 from collections import defaultdict, deque
-from typing import List, Optional, Tuple, TYPE_CHECKING, Union
+from collections.abc import Iterator
 from ._rules import rules
 from ..._functions import lazy_product
 from ...exceptions import InvalidAromaticRing
-
-
-if TYPE_CHECKING:
-    from chython import MoleculeContainer
 
 
 # atomic number constants
@@ -42,7 +38,7 @@ Te = 52
 class Kekule:
     __slots__ = ()
 
-    def kekule(self: Union['Kekule', 'MoleculeContainer'], *, buffer_size=7, ignore_pyrrole_hydrogen=False) -> bool:
+    def kekule(self, *, buffer_size=7, ignore_pyrrole_hydrogen=False) -> bool:
         """
         Convert structure to kekule form. Return True if found any aromatic ring. Set implicit hydrogen count and
         hybridization marks on atoms.
@@ -64,12 +60,12 @@ class Kekule:
                 atoms.add(m)
             for n in atoms:
                 self.calc_implicit(n)
-            self.flush_cache(keep_sssr=True, keep_components=True)
+            self.flush_cache(keep_sssr=True, keep_components=True, keep_special_connectivity=True)
             self.calc_labels()
             return True
         return fixed
 
-    def enumerate_kekule(self: Union['Kekule', 'MoleculeContainer'], ignore_pyrrole_hydrogen=False):
+    def enumerate_kekule(self, ignore_pyrrole_hydrogen=False) -> Iterator['MoleculeContainer']:
         """
         Enumerate all possible kekule forms of molecule.
         """
@@ -87,7 +83,7 @@ class Kekule:
             copy.calc_labels()
             yield copy
 
-    def __fix_rings(self: 'MoleculeContainer'):
+    def __fix_rings(self):
         atoms = self._atoms
         bonds = self._bonds
         seen = set()
@@ -112,12 +108,12 @@ class Kekule:
                         # flush sssr and components cache
                         keep = False
         if seen:
-            self.flush_cache(keep_sssr=keep, keep_components=keep)
+            self.flush_cache(keep_sssr=keep, keep_components=keep, keep_special_connectivity=keep)
             self.calc_labels()
             return True
         return False
 
-    def __prepare_rings(self: 'MoleculeContainer', ignore_pyrrole_hydrogen):
+    def __prepare_rings(self, ignore_pyrrole_hydrogen):
         atoms = self._atoms
         bonds = self._bonds
 
@@ -344,7 +340,7 @@ class Kekule:
 
 def _kekule_component(rings, double_bonded, pyrroles, buffer_size):
     # (current atom, previous atom, bond between cp atoms, path deep for cutting [None if cut impossible])
-    stack: List[List[Tuple[int, int, int, Optional[int]]]]
+    stack: list[list[tuple[int, int, int, int | None]]]
     if double_bonded:  # start from double bonded if exists
         start = next(iter(double_bonded))
         stack = [[(next(iter(rings[start])), start, 1, 0)]]

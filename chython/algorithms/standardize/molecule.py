@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2018-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2018-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  Copyright 2021 Dmitrij Zanadvornykh <zandmitrij@gmail.com>
 #  Copyright 2018 Tagir Akhmetshin <tagirshin@gmail.com>
 #  This file is part of chython.
@@ -19,31 +19,23 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 from collections import defaultdict
-from typing import List, TYPE_CHECKING, Union, Tuple
-from ._charged import fixed_rules, morgan_rules
-from ._groups import *
-from ._tautomers import rules as tautomers_rules
+from ._groups import rules as fragment_rules
+from ._isomers import rules as isomer_rules
 from ._metal_organics import rules as metal_rules
 from ...containers.bonds import Bond
 from ...exceptions import ValenceError, ImplementationError
 from ...periodictable import H as _H
 
 
-if TYPE_CHECKING:
-    from chython import MoleculeContainer
-
-
-# atomic number constants
 H = 1
-C = 6
 
 
 class Standardize:
     __slots__ = ()
 
-    def canonicalize(self: 'MoleculeContainer', *, fix_tautomers=True, keep_kekule=False,
+    def canonicalize(self, *, fix_tautomers=True, keep_kekule=False,
                      ignore_pyrrole_hydrogen=False, buffer_size=7,
-                     logging=False, ignore=True) -> Union[bool, List[Tuple[Tuple[int, ...], int, str]]]:
+                     logging=False, ignore=True) -> bool | list:
         """
         Convert molecule to canonical forms of functional groups and aromatic rings without explicit hydrogens.
 
@@ -55,23 +47,20 @@ class Standardize:
         :param ignore_pyrrole_hydrogen: ignore hydrogen on pyrrole to fix invalid rings like Cn1cc[nH]c1.
         """
         k = self.kekule(buffer_size=buffer_size, ignore_pyrrole_hydrogen=ignore_pyrrole_hydrogen)
-        s = self.standardize(_fix_stereo=False, logging=True, ignore=ignore, fix_tautomers=fix_tautomers)
-        h, changed = self.implicify_hydrogens(_fix_stereo=False, logging=True)
+        s = self.standardize(logging=True, ignore=ignore, fix_tautomers=fix_tautomers)
+        h, changed = self.implicify_hydrogens(logging=True)
 
-        if fix_tautomers and (logging or keep_kekule):  # thiele can change tautomeric form
+        if logging or keep_kekule:  # thiele can change tautomeric form
             hgs = {n: a.implicit_hydrogens for n, a in self.atoms()}
         if keep_kekule:  # save bond orders
             bonds = [(b, b.order) for _, _, b in self.bonds()]
 
         t = self.thiele(fix_tautomers=fix_tautomers)
-        if not t and fix_tautomers:  # after standardizations keto-enols stereo should be fixed
-            self.fix_stereo()
-        c = self.standardize_charges(prepare_molecule=False, logging=True)
-        a = self.standardize_tautomers(prepare_molecule=False, logging=True)
+        a = self.standardize_isomers(logging=True)
 
         if keep_kekule and t:  # restore
             # check ring charge/hydrogen moving
-            if c or fix_tautomers and any(hgs[n] != a.implicit_hydrogens for n, a in self.atoms()):
+            if a or any(hgs[n] != aa.implicit_hydrogens for n, aa in self.atoms()):
                 self.kekule()  # we need to do full kekule again
             else:
                 for b, o in bonds:  # noqa
@@ -86,22 +75,19 @@ class Standardize:
                 s.append((tuple(changed), -1, 'implicified'))
             if t:
                 s.append(((), -1, 'aromatized'))
-                if fix_tautomers and (x := tuple(n for n, a in self.atoms() if hgs[n] != a.implicit_hydrogens)):
+                if fix_tautomers and (x := tuple(n for n, aa in self.atoms() if hgs[n] != aa.implicit_hydrogens)):
                     s.append((x, -1, 'aromatic tautomer found'))
-            if c:
-                s.append((tuple(c), -1, 'recharged'))
             if a:
-                s.append((tuple(a), -1, 'tautomers standardized'))
+                s.append((tuple(a), -1, 'isomers standardized'))
             if keep_kekule and t:
-                if c or fix_tautomers and any(hgs[n] != a.implicit_hydrogens for n, a in self.atoms()):
+                if a or any(hgs[n] != aa.implicit_hydrogens for n, aa in self.atoms()):
                     s.append(((), -1, 'kekulized again'))
                 else:
                     s.append(((), -1, 'kekule form restored'))
             return s
-        return bool(k or s or h or t or c or a)
+        return bool(k or s or h or t or a)
 
-    def standardize(self: Union['MoleculeContainer', 'Standardize'], *, logging=False, ignore=True, fix_tautomers=True,
-                    _fix_stereo=True) -> Union[bool, List[Tuple[Tuple[int, ...], int, str]]]:
+    def standardize(self, *, logging=False, ignore=True, fix_tautomers=True) -> bool | list:
         """
         Standardize functional groups. Return True if any non-canonical group found.
 
@@ -109,21 +95,9 @@ class Standardize:
         :param logging: return list of fixed atoms with matched rules.
         :param ignore: ignore standardization bugs.
         """
-        r = self.fix_resonance(logging=True, _fix_stereo=False)
-        if r:
-            log = [(tuple(r), -1, 'resonance fixed')]
-            fixed = set(r)
-        else:
-            log, fixed = [], set()
+        log, fixed = [], set()
 
-        l, f = self.__standardize(double_rules, fix_tautomers)
-        log.extend(l)
-        fixed.update(f)
-        if f:
-            l, f = self.__standardize(double_rules, fix_tautomers)  # double shot rules for overlapped groups
-            log.extend(l)
-            fixed.update(f)
-        l, f = self.__standardize(single_rules, fix_tautomers)
+        l, f = self.__standardize(fragment_rules, fix_tautomers)
         log.extend(l)
         fixed.update(f)
         l, f = self.__standardize(metal_rules, fix_tautomers)  # metal-organics fix
@@ -136,7 +110,7 @@ class Standardize:
             else:
                 raise ImplementationError(f'standardization leads to invalid valences: {b}')
 
-        if fixed and _fix_stereo:
+        if fixed:
             self.fix_stereo()
 
         if logging:
@@ -145,207 +119,132 @@ class Standardize:
             return log
         return bool(fixed)
 
-    def standardize_charges(self: 'MoleculeContainer', *, logging=False, prepare_molecule=True,
-                            _fix_stereo=True) -> Union[bool, List[int]]:
+    def standardize_isomers(self, *, logging=False) -> bool | list:
         """
-        Set canonical positions of charges in heterocycles and ferrocenes.
+        Set canonical positions of charges and hydrogens.
 
         :param logging: return list of changed atoms.
-        :param prepare_molecule: do thiele procedure.
         """
-        changed: List[int] = []
+        changed: list[int] = []
         bonds = self._bonds
-        nsc = self.not_special_connectivity
         atoms = self._atoms
 
-        if prepare_molecule:
-            self.thiele()
-
         seen = set()
-        # not morgan
-        for q, fix in fixed_rules:
-            for mapping in q.get_mapping(self, automorphism_filter=False):
-                match = set(mapping.values())
-                if len(match.intersection(seen)) > 2:  # if matched more than 2 atoms
-                    continue
-                seen.update(match)
-                # if not 2 neighbors and 1 hydrogen or 3 neighbors within 1st and second atoms - break
-                atom_1, atom_2 = mapping[1], mapping[2]
-                if len(bonds[atom_1]) == 2:
-                    if not atoms[atom_1].implicit_hydrogens:
-                        continue
-                elif all(x == 4 for x in bonds[atom_1].values()):
-                    continue
-
-                if len(bonds[atom_2]) == 2:
-                    if not atoms[atom_2].implicit_hydrogens:
-                        continue
-                elif all(x == 4 for x in bonds[atom_2].values()):
-                    continue
-
-                if fix:
-                    atom_3 = mapping[3]
-                    atoms[atom_3]._charge = 0
-                    changed.append(atom_3)
-                else:
-                    atoms[atom_1]._charge = 0
-                    changed.append(atom_1)
-                atoms[atom_2]._charge = 1
-                changed.append(atom_2)  # add atoms to changed
-
-        # morgan
-        pairs = []
-        for q, fix in morgan_rules:
-            for mapping in q.get_mapping(self, automorphism_filter=False):
-                match = set(mapping.values())
-                if len(match.intersection(seen)) > 2:  # if matched more than 2 atoms
-                    continue
-                seen.update(match)
-                atom_1, atom_2 = mapping[1], mapping[2]
-                if len(bonds[atom_1]) == 2:
-                    if not atoms[atom_1].implicit_hydrogens:
-                        continue
-                elif all(x == 4 for x in bonds[atom_1].values()):
-                    continue
-
-                if len(bonds[atom_2]) == 2:
-                    if not atoms[atom_2].implicit_hydrogens:
-                        continue
-                elif all(x == 4 for x in bonds[atom_2].values()):
-                    continue
-
-                if fix:
-                    atom_3 = mapping[3]
-                    atoms[atom_3]._charge = 0
-                    changed.append(atom_3)
-                else:
-                    # remove charge from 1st N atom
-                    atoms[atom_1]._charge = 0
-                pairs.append((atom_1, atom_2, fix))
-
-        # ferrocene
+        charge_morgan_pairs = []
         fcr = []
-        for r in self.sssr:
-            if len(r) != 5 or not all(atoms[n].hybridization == 4 for n in r):
-                continue
-            ch = [(n, x) for n in r if (x := atoms[n].charge)]
-            if len(ch) != 1 or ch[0][1] != -1:
-                continue
-            ch = ch[0][0]
-            ca = [n for n in r if atoms[n] == C and
-                  (len(bs := nsc[n]) == 2 or len(bs) == 3 and any(b == 1 for b in bonds[n].values()))]
-            if len(ca) < 2 or ch not in ca:
-                continue
-            atoms[ch]._charge = 0  # reset charge for morgan recalculation
-            fcr.append(ca)
-            changed.append(ch)
+        tautomer_morgan_pairs = []
+        nitrogens = set()
+        doubles = set()
+        protonated = set()
+        carbons = set()
 
-        if pairs or fcr:
-            self.__dict__.pop('atoms_order', None)  # remove cached morgan
-            for atom_1, atom_2, fix in pairs:
+        for q, rule_type in isomer_rules:
+            for mapping in q.get_mapping(self, automorphism_filter=False):
+                match = set(mapping.values())
+                if len(match.intersection(seen)) > 2:
+                    continue
+                seen.update(match)
+
+                if rule_type == 'charge_fixed':
+                    atom_1, atom_2 = mapping[1], mapping[2]
+                    atoms[atom_1]._charge = 0
+                    atoms[atom_2]._charge = 1
+                    changed.append(atom_1)
+                    changed.append(atom_2)
+
+                elif rule_type == 'charge_fixed_bridge':
+                    atom_1, atom_2, atom_3 = mapping[1], mapping[2], mapping[3]
+                    atoms[atom_3]._charge = 0
+                    atoms[atom_2]._charge = 1
+                    changed.append(atom_3)
+                    changed.append(atom_2)
+
+                elif rule_type == 'tautomer_fixed':
+                    atom_1, atom_2 = mapping[1], mapping[2]
+                    atoms[atom_1]._implicit_hydrogens = 1
+                    atoms[atom_2]._implicit_hydrogens = 0
+                    changed.append(atom_1)
+                    changed.append(atom_2)
+
+                elif rule_type == 'charge_morgan':
+                    atom_1, atom_2 = mapping[1], mapping[2]
+                    atoms[atom_1]._charge = 0
+                    charge_morgan_pairs.append((atom_1, atom_2, atom_1))
+
+                elif rule_type == 'charge_morgan_bridge':
+                    atom_1, atom_2, atom_3 = mapping[1], mapping[2], mapping[3]
+                    atoms[atom_3]._charge = 0
+                    charge_morgan_pairs.append((atom_1, atom_2, atom_3))
+
+                elif rule_type == 'ferrocene':
+                    atoms[mapping[1]]._charge = 0
+                    fcr.append([mapping[i] for i in range(1, 6)])
+                    changed.append(mapping[1])
+
+                elif rule_type == 'tautomer_morgan':
+                    atom_1, atom_2 = mapping[1], mapping[2]
+                    atoms[atom_1]._implicit_hydrogens = 0
+                    tautomer_morgan_pairs.append((atom_1, atom_2, atom_1))
+
+                elif rule_type == 'tautomer_morgan_donor':
+                    atom_1, atom_2, atom_3 = mapping[1], mapping[2], mapping[3]
+                    atoms[atom_3]._implicit_hydrogens = 0
+                    tautomer_morgan_pairs.append((atom_1, atom_2, atom_3))
+
+                elif rule_type == 'amidine':
+                    atom_1, atom_2 = mapping[1], mapping[2]
+                    nitrogens.add(atom_2)
+                    if atom_1 not in nitrogens:
+                        atom_3 = mapping[3]
+                        carbons.add(atom_3)
+                        nitrogens.add(atom_1)
+                        bonds[atom_1][atom_3]._order = 1
+                        atoms[atom_1]._implicit_hydrogens += 1
+                        doubles.add((atom_1, atom_3))
+                        protonated.add(atom_1)
+
+        if charge_morgan_pairs or fcr or tautomer_morgan_pairs or carbons:
+            self.__dict__.pop('atoms_order', None)
+            self.__dict__.pop('int_adjacency', None)
+
+            for atom_1, atom_2, source in charge_morgan_pairs:
                 if self.atoms_order[atom_1] > self.atoms_order[atom_2]:
                     atoms[atom_2]._charge = 1
-                    changed.append(atom_2)
-                    if not fix:
-                        changed.append(atom_1)
+                    if source != atom_2:
+                        changed.append(source)
+                        changed.append(atom_2)
                 else:
                     atoms[atom_1]._charge = 1
-                    if fix:
+                    if source != atom_1:
+                        changed.append(source)
                         changed.append(atom_1)
 
             for ca in fcr:
                 n = min(ca, key=self.atoms_order.get)
                 atoms[n]._charge = -1
                 changed.append(n)
-            del self.__dict__['atoms_order']  # remove invalid morgan
 
-        if changed:
-            self.flush_cache(keep_sssr=True, keep_components=True)  # clear cache
-            if _fix_stereo:
-                self.fix_stereo()
-            if logging:
-                return changed
-            return True
-        if logging:
-            return []
-        return False
-
-    def standardize_tautomers(self: 'MoleculeContainer', *, logging=False, prepare_molecule=True,
-                              _fix_stereo=True) -> Union[bool, List[int]]:
-        """
-        Set canonical positions of hydrogens in azoles, guanidines, etc.
-
-        :param logging: return a list of changed atoms.
-        :param prepare_molecule: apply thiele procedure.
-        """
-        changed: List[int] = []
-        atoms = self._atoms
-        bonds = self._bonds
-
-        if prepare_molecule:
-            self.thiele()
-
-        seen = set()
-        pairs = []
-        nitrogens = set()
-        doubles = set()
-        protonated = set()
-        carbons = set()
-        for q, r_type in tautomers_rules:
-            for mapping in q.get_mapping(self, automorphism_filter=False):
-                match = set(mapping.values())
-                if len(match.intersection(seen)) > 2:  # if matched more than 2 atoms
-                    continue
-                seen.update(match)
-                atom_1, atom_2 = mapping[1], mapping[2]
-                if r_type == 0:  # move hydrogen
-                    atoms[atom_1]._implicit_hydrogens = 1
-                    atoms[atom_2]._implicit_hydrogens = 0
-                    changed.append(atom_1)
-                    changed.append(atom_2)
-                elif r_type == 1:
-                    atoms[atom_1]._implicit_hydrogens = 0  # remove hydrogen for morgan calculation
-                    pairs.append((atom_1, atom_2, False))
-                elif r_type == 2:
-                    atom_3 = mapping[3]
-                    atoms[atom_3]._implicit_hydrogens = 0
-                    pairs.append((atom_1, atom_2, True))
-                    changed.append(atom_3)
-                else:  # r_type == 3
-                    nitrogens.add(atom_2)
-                    if atom_1 not in nitrogens:
-                        atom_3 = mapping[3]
-                        carbons.add(atom_3)
-                        nitrogens.add(atom_1)
-                        # make symmetric form for morgan
-                        bonds[atom_1][atom_3]._order = 1  # reset double bond
-                        atoms[atom_1]._implicit_hydrogens += 1  # add hydrogen
-                        doubles.add((atom_1, atom_3))
-                        protonated.add(atom_1)
-
-        if pairs or carbons:
-            self.__dict__.pop('atoms_order', None)  # remove cached morgan
-            for atom_1, atom_2, fix in pairs:
+            for atom_1, atom_2, source in tautomer_morgan_pairs:
                 if self.atoms_order[atom_1] >= self.atoms_order[atom_2]:
-                    # keep as is
                     atoms[atom_1]._implicit_hydrogens = 1
-                    if fix:  # type 2 is always changing
+                    if source != atom_1:
+                        changed.append(source)
                         changed.append(atom_1)
-                else:  # move hydrogen
+                else:
                     atoms[atom_2]._implicit_hydrogens = 1
-                    changed.append(atom_2)
-                    if not fix:
-                        changed.append(atom_1)
+                    if source != atom_2:
+                        changed.append(source)
+                        changed.append(atom_2)
+
             if carbons:
-                nitrogens = sorted(nitrogens, key=self.atoms_order.get)
-                while nitrogens:
-                    atom_1 = nitrogens.pop()
+                nitrogens_sorted = sorted(nitrogens, key=self.atoms_order.get)
+                while nitrogens_sorted:
+                    atom_1 = nitrogens_sorted.pop()
                     for atom_3 in sorted(bonds[atom_1], key=self.atoms_order.get):
                         if atom_3 in carbons:
                             carbons.discard(atom_3)
                             atoms[atom_1]._implicit_hydrogens -= 1
                             bonds[atom_1][atom_3]._order = 2
-
                             if (atom_1, atom_3) not in doubles:
                                 changed.append(atom_1)
                                 changed.append(atom_3)
@@ -353,12 +252,13 @@ class Standardize:
                     else:
                         if atom_1 in protonated:
                             changed.append(atom_1)
-            del self.__dict__['atoms_order']  # remove invalid morgan
+
+            del self.__dict__['atoms_order']
+            del self.__dict__['int_adjacency']
 
         if changed:
-            self.flush_cache(keep_sssr=True, keep_components=True)  # clear cache
-            if _fix_stereo:
-                self.fix_stereo()
+            self.flush_cache(keep_sssr=True, keep_components=True, keep_special_connectivity=True)
+            self.fix_stereo()
             if logging:
                 return changed
             return True
@@ -366,7 +266,7 @@ class Standardize:
             return []
         return False
 
-    def remove_coordinate_bonds(self: 'MoleculeContainer', *, keep_to_terminal=True, _fix_stereo=True) -> int:
+    def remove_coordinate_bonds(self, *, keep_to_terminal=True) -> int:
         """Remove coordinate (or hydrogen) bonds marked with 8 (any) bond
 
         :param keep_to_terminal: Keep any bonds to terminal hydrogens
@@ -383,14 +283,12 @@ class Standardize:
             self.delete_bond(n, m, _skip_calculation=True)
 
         if ab:
-            self.flush_cache(keep_sssr=True)
+            self.flush_cache(keep_sssr=True, keep_special_connectivity=True)
             self.calc_labels()
-            if _fix_stereo:
-                self.fix_stereo()
+            self.fix_stereo()
         return len(ab)
 
-    def implicify_hydrogens(self: 'MoleculeContainer', *, logging=False, _fix_stereo=True) -> \
-            Union[int, Tuple[int, List[int]]]:
+    def implicify_hydrogens(self, *, logging=False) -> int | tuple:
         """
         Remove explicit hydrogen if possible. Return number of removed hydrogens.
         Works only with Kekule forms of aromatic structures.
@@ -451,15 +349,13 @@ class Standardize:
         if to_remove:
             self.flush_cache(keep_sssr=True)
             self.calc_labels()
-            if _fix_stereo:
-                self.fix_stereo()
+            self.fix_stereo()
 
         if logging:
             return len(to_remove), list(fixed)
         return len(to_remove)
 
-    def explicify_hydrogens(self: 'MoleculeContainer', *, start_map=None, _return_map=False, _fix_stereo=True) -> \
-            Union[int, List[Tuple[int, int]]]:
+    def explicify_hydrogens(self, *, start_map=None, _return_map=False) -> int | list:
         """
         Add explicit hydrogens to atoms.
 
@@ -487,8 +383,7 @@ class Standardize:
 
             self.flush_cache(keep_sssr=True)
             self.calc_labels()
-            if _fix_stereo:
-                self.fix_stereo()
+            self.fix_stereo()
             if _return_map:
                 return log
             return len(to_add)
@@ -496,7 +391,7 @@ class Standardize:
             return []
         return 0
 
-    def check_valence(self: 'MoleculeContainer') -> List[int]:
+    def check_valence(self) -> list[int]:
         """
         Check valences of all atoms.
 
@@ -505,7 +400,7 @@ class Standardize:
         # only invalid atoms have None hydrogens.
         return [n for n, a in self.atoms() if a.implicit_hydrogens is None]
 
-    def clean_isotopes(self: 'MoleculeContainer') -> bool:
+    def clean_isotopes(self) -> bool:
         """
         Clean isotope marks from molecule.
         Return True if any isotope found.
@@ -514,12 +409,12 @@ class Standardize:
         if isotopes:
             for i in isotopes:
                 i._isotope = None
-            self.flush_cache(keep_sssr=True, keep_components=True)
+            self.flush_cache(keep_sssr=True, keep_components=True, keep_special_connectivity=True)
             self.fix_stereo()
             return True
         return False
 
-    def __standardize(self: 'MoleculeContainer', rules, fix_tautomers):
+    def __standardize(self, rules, fix_tautomers):
         atoms = self._atoms
         bonds = self._bonds
 
@@ -568,7 +463,7 @@ class Standardize:
 
             if not hs:  # not matched
                 continue
-            self.flush_cache(keep_sssr=keep_sssr, keep_components=keep_components)
+            self.flush_cache(keep_sssr=keep_sssr, keep_components=keep_components, keep_special_connectivity=keep_sssr)
             # recalculate isomorphism labels
             self.calc_labels()
             for n in hs:  # hydrogens count recalculation

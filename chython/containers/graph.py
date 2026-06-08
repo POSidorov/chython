@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2018-2024 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2018-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@ Bond = TypeVar('Bond')
 
 class Graph(Generic[Atom, Bond], ABC):
     __slots__ = ('_atoms', '_bonds', '__dict__')
-    __class_cache__ = {}
 
     _atoms: Dict[int, Atom]
     _bonds: Dict[int, Dict[int, Bond]]

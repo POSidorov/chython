@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2021-2024 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2021-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -17,7 +17,6 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 from collections import defaultdict
-from io import StringIO, TextIOWrapper
 from pathlib import Path
 from ...containers import MoleculeContainer
 
@@ -39,11 +38,11 @@ class IO:
         elif isinstance(file, Path):
             self._file = file.open('a' if append else 'w')
             self._is_buffer = False
-        elif isinstance(file, (TextIOWrapper, StringIO)):
+        elif hasattr(file, 'write'):
             self._file = file
             self._is_buffer = True
         else:
-            raise TypeError('invalid file. TextIOWrapper, StringIO subclasses or path to file expected')
+            raise TypeError('invalid file. file-like object or path to file expected')
 
     def close(self, force=False):
         """
@@ -68,6 +67,17 @@ class IO:
 
 
 class EMOLWrite(IO):
+    def __init__(self, file, *, mapping: bool = True, append: bool = False, absolute: bool = False):
+        """
+        :param mapping: write atom mapping.
+        :param append: open file path in append mode.
+        :param absolute: explicitly write MDLV30/STEABS collection for stereocenters without extended stereo groups.
+            By default chython treats any set chirality flag as absolute if not in an AND/OR group,
+            but some tools require the ABS collection to be explicitly present in the file.
+        """
+        self._absolute = absolute
+        super().__init__(file, mapping=mapping, append=append)
+
     def _write_molecule(self, g, write3d=None):
         if not isinstance(g, MoleculeContainer):
             raise TypeError('MoleculeContainer expected')
@@ -111,7 +121,33 @@ class EMOLWrite(IO):
             if m not in wedge[n]:
                 i += 1
                 file.write(f'M  V30 {i} {b.order} {mapping[n]} {mapping[m]}\n')
-        file.write('M  V30 END BOND\nM  V30 END CTAB\n')
+        file.write('M  V30 END BOND\n')
+
+        # enhanced stereo collection
+        rac = defaultdict(list)  # AND groups: positive extended_stereo
+        rel = defaultdict(list)  # OR groups: negative extended_stereo
+        ast = []  # absolute stereo
+        for m, a in g.atoms():
+            if (es := a.extended_stereo) is not None:
+                if es > 0:
+                    rac[es].append(mapping[m])
+                elif es < 0:
+                    rel[-es].append(mapping[m])
+            elif a.stereo is not None:
+                ast.append(mapping[m])
+        if rac or rel or (self._absolute and ast):
+            file.write('M  V30 BEGIN COLLECTION\n')
+            if self._absolute and ast:
+                file.write(f'M  V30 MDLV30/STEABS ATOMS=({len(ast)} {" ".join(str(x) for x in ast)})\n')
+            for gid in sorted(rac):
+                al = rac[gid]
+                file.write(f'M  V30 MDLV30/STERAC{gid} ATOMS=({len(al)} {" ".join(str(x) for x in al)})\n')
+            for gid in sorted(rel):
+                al = rel[gid]
+                file.write(f'M  V30 MDLV30/STEREL{gid} ATOMS=({len(al)} {" ".join(str(x) for x in al)})\n')
+            file.write('M  V30 END COLLECTION\n')
+
+        file.write('M  V30 END CTAB\n')
 
 
 class MOLWrite(IO):

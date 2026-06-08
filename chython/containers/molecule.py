@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2017-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2017-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -16,20 +16,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
-from CachedMethods import cached_args_method
 from collections import Counter, defaultdict
 from functools import cached_property
+from lazy_object_proxy import Proxy
 from numpy import uint, zeros
 from typing import Dict, Iterable, List, Tuple, Union
 from zlib import compress, decompress
 from .bonds import Bond, DynamicBond
 from .cgr import CGRContainer
+from .chimera import Chimera
 from .graph import Graph
 from .rdkit import RDkit
 from ..algorithms.aromatics import Aromatize
 from ..algorithms.calculate2d import Calculate2DMolecule
 from ..algorithms.conformers import Conformers
 from ..algorithms.depict import DepictMolecule
+from ..algorithms.groups import FunctionalGroups
 from ..algorithms.isomorphism import MoleculeIsomorphism
 from ..algorithms.fingerprints import Fingerprints
 from ..algorithms.mcs import MCS
@@ -44,14 +46,27 @@ from ..exceptions import ValenceError
 from ..periodictable import DynamicElement, Element, H as _H
 
 
+def _rotable_rules():
+    from .. import smarts
+
+    w = smarts('[A;D2,D3,D4]-;!@[A;D2,D3,D4]')
+    b = [smarts('[N;D2,D3]-;!@[C,S;D2,D3]=[O,N]'), smarts('[N;D2,D3]-;!@[S;D4](=[O,N])=[O,N]')]
+    return w, b
+
+
+rotable_rules = Proxy(_rotable_rules)
+
 # atomic number constants
 H = 1
 C = 6
+N = 7
+O = 8
+S = 16
 
 
 class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, MoleculeIsomorphism,
                         Aromatize, StandardizeMolecule, MoleculeSmiles, DepictMolecule, Calculate2DMolecule,
-                        Conformers, Fingerprints, Tautomers, RDkit, MCS, X3domMolecule):
+                        Conformers, Fingerprints, Tautomers, RDkit, Chimera, MCS, X3domMolecule, FunctionalGroups):
     __slots__ = ('_meta', '_name', '_conformers', '_changed', '_backup')
 
     def __init__(self):
@@ -101,7 +116,6 @@ class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, Mol
             return tuple(self._bonds[atom].items())
         return tuple(self._bonds[atom])
 
-    @cached_args_method
     def adjacency_matrix(self, set_bonds=False, /):
         """
         Adjacency matrix of Graph.
@@ -140,6 +154,68 @@ class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, Mol
     def molecular_mass(self) -> float:
         h = _H().atomic_mass
         return sum(a.atomic_mass + (a.implicit_hydrogens or 0) * h for _, a in self.atoms())
+
+    @cached_property
+    def rotatable_bonds_count(self) -> int:
+        """
+        Number of rotatable bonds: non-ring single bonds linked to non-terminal atoms except [sulfon]amide-like C(=O)-N.
+
+        Charged atoms like R-NO2, R-[N+]([C,H])=C are ignored.
+        """
+        w, bs = rotable_rules
+        return sum(1 for _ in w.get_mapping(self)) - sum(1 for b in bs for _ in b.get_mapping(self))
+
+    @cached_property
+    def hydrogen_bond_donors_count(self) -> int:
+        """
+        Number of hydrogen bond donors: N, O, S atoms with hydrogens and at least one neighbour
+        (not water, ammonia, hydrogen sulfide).
+        """
+        return sum(
+            1 for _, a in self.atoms()
+            if a in (N, O, S)
+            and a.neighbors and not a.is_radical
+            and (a.implicit_hydrogens or a.explicit_hydrogens)
+        )
+
+    @cached_property
+    def hydrogen_bond_acceptors_count(self) -> int:
+        """
+        Number of hydrogen bond acceptors: O, N, S atoms with at least one neighbour
+        (not water, ammonia, hydrogen sulfide), Non-positively charged, with lone pairs, except R-SH and R-S(=O)-R sulfurs.
+        """
+        hba = 0
+        for _, a in self.atoms():
+            if not a.neighbors or a.is_radical: continue
+            elif a == O:
+                if a.charge <= 0:
+                    hba += 1
+            elif a == N:
+                if a.charge > 0 or a.hybridization == 4 and (a.implicit_hydrogens or a.neighbors == 3): continue
+                hba += 1
+            elif a == S:
+                if a.charge == -1:  # R-[S-]
+                    hba += 1
+                elif a.charge == 0 and a.neighbors == 2 and a.hybridization == 1:  # R-S-R
+                    hba += 1
+        return hba
+
+    @cached_property
+    def carbon_sp3_fraction(self) -> float:
+        """
+        Fraction of carbon atoms with sp3 hybridisation among all carbon atoms.
+        """
+        if not self.carbon_count:
+            return 0.
+        return self.carbon_sp3_count / self.carbon_count
+
+    @cached_property
+    def carbon_sp3_count(self) -> int:
+        return sum(1 for _, a in self.atoms() if a == C and a.hybridization == 1)
+
+    @cached_property
+    def carbon_count(self) -> int:
+        return self.brutto.get('C', 0)
 
     @cached_property
     def brutto(self) -> Dict[str, int]:
@@ -258,6 +334,7 @@ class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, Mol
 
     def copy(self, *, keep_sssr=False, keep_components=False) -> 'MoleculeContainer':
         copy = super().copy()
+        copy._changed = copy._backup = None
         copy._name = self._name
         if self._meta is None:
             copy._meta = None
@@ -291,20 +368,24 @@ class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, Mol
         """
         if not atoms:
             raise ValueError('empty atoms list not allowed')
-        if set(atoms) - self._atoms.keys():
+        atoms_set = set(atoms)
+        if atoms_set - self._atoms.keys():
             raise ValueError('invalid atom numbers')
-        atoms = tuple(n for n in self if n in atoms)  # save original order
+        atoms = tuple(n for n in self if n in atoms_set)  # save original order
         sub = object.__new__(self.__class__)
-        sub._name = sub._meta = sub._changed = None
-        sub._atoms = {n: self._atoms[n].copy(hydrogens=not recalculate_hydrogens, stereo=True) for n in atoms}
+        sub._name = sub._meta = sub._changed = sub._backup = None
+        sub._atoms = {n: self._atoms[n].copy(hydrogens=True, stereo=True) for n in atoms}
         sub._bonds = sb = {}
         for n in atoms:
             sb[n] = sbn = {}
             for m, bond in self._bonds[n].items():
                 if m in sb:  # bond partially exists. need back-connection.
                     sbn[m] = sb[m][n]
-                elif m in atoms:
+                elif m in atoms_set:
                     sbn[m] = bond.copy(stereo=True)
+        if recalculate_hydrogens:
+            # Only recalculate H on atoms that lost neighbors
+            sub._changed = {n for n in atoms if not self._bonds[n].keys() <= atoms_set}
         sub.fix_structure(recalculate_hydrogens=recalculate_hydrogens)
         sub.fix_stereo()
         return sub
@@ -539,11 +620,16 @@ class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, Mol
         """
         Fix molecule internal representation
         """
+        self.flush_cache()
         self.calc_labels()  # refresh all labels
 
         if recalculate_hydrogens:
-            for n in (self._changed or self._atoms):
-                self.calc_implicit(n)  # fix Hs count
+            if not self._changed:
+                for n in self._atoms:
+                    self.calc_implicit(n)
+            else:
+                for n in self._changed.intersection(self._atoms):
+                    self.calc_implicit(n)  # fix Hs count
         self._changed = None
 
     def calc_labels(self):
@@ -661,13 +747,15 @@ class MoleculeContainer(MoleculeStereo, Graph[Element, Bond], Morgan, Rings, Mol
                 return True
         return False
 
-    def flush_cache(self, *, keep_sssr=False, keep_components=False):
+    def flush_cache(self, *, keep_sssr=False, keep_components=False, keep_special_connectivity=False):
         backup = {}
         if keep_sssr:
             # good to keep if no new bonds or bonds deletions or bonds to/from any change
             for k,  v in self.__dict__.items():
-                if k in ('sssr', 'atoms_rings', 'atoms_rings_sizes', 'not_special_connectivity', 'rings_count'):
+                if k in ('sssr', 'atoms_rings', 'atoms_rings_sizes', 'rings_count'):
                     backup[k] = v
+        if keep_special_connectivity:
+            backup['not_special_connectivity'] = self.not_special_connectivity
         if keep_components:
             # good to keep if no new bonds or bonds deletions
             if 'connected_components' in self.__dict__:

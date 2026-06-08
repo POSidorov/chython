@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2018-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2018-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  Copyright 2019-2020 Dinar Batyrshin <batyrshin-dinar@mail.ru>
 #  This file is part of chython.
 #
@@ -18,18 +18,14 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 from asyncio import new_event_loop
-from CachedMethods import cached_method
 from collections import defaultdict
 from math import atan2, sin, cos, hypot
 from os.path import join
 from tempfile import TemporaryDirectory
-from typing import Tuple, TYPE_CHECKING, Union, Literal
+from typing import Literal
 from uuid import uuid4
 from zlib import compress
-
-
-if TYPE_CHECKING:
-    from chython import ReactionContainer, MoleculeContainer
+from .._functions import cached_method
 
 cpk = tuple('''
  #909090                                                                                         #D9FFFF
@@ -55,7 +51,7 @@ _render_config = {'carbon': False, 'dashes': (.2, .1), 'span_dy': .15, 'mapping'
                   'span_size': .35, 'other_size': 0.3, 'monochrome': False, 'bond_color': 'black', 'bond_width': .04,
                   'other_color': 'black', 'bond_radius': .02, 'atom_radius': -.2, 'mapping_size': .25,
                   'atoms_colors': cpk, 'triple_space': .13, 'double_space': .06, 'mapping_color': '#0305A7',
-                  'aromatic_space': .14, 'aromatic_dashes': (.15, .05), 'dx_m': .05, 'dy_m': .2,
+                  'aromatic_space': .14, 'aromatic_dashes': (.15, .05), 'dx_m': .05, 'dy_m': .2, 'dx_s': .05, 'dy_s': .1,
                   'other_font_style': 'monospace', 'dx_ci': .05, 'dy_ci': 0.2, 'symbols_font_style': 'sans-serif',
                   'mapping_font_style': 'monospace', 'wedge_space': .08, 'arrow_color': 'black'}
 
@@ -162,13 +158,14 @@ def _render_aromatic_bond(n_x, n_y, m_x, m_y, c_x, c_y):
 
 def depict_settings(*, carbon: bool = False, aam: bool = True, monochrome: bool = False,
                     bond_color: str = 'black', aam_color: str = '#0305A7', atoms_colors: tuple = cpk,
-                    bond_width: float = .04, wedge_space: float = .08, dashes: Tuple[float, float] = (.2, .1),
-                    aromatic_dashes: Tuple[float, float] = (.15, .05), dx_ci: float = .05, dy_ci: float = .2,
-                    dx_m: float = .05, dy_m: float = .2, span_dy: float = .15, double_space: float = .06,
-                    triple_space: float = .13, aromatic_space: float = .14, atom_radius: float = .2, bond_radius=.02,
-                    font_size: float = .5, other_size: float = .3, span_size: float = .35,  aam_size: float = .25,
-                    symbols_font_style: str = 'sans-serif', other_font_style: str = 'monospace',
-                    other_color: str = 'black', arrow_color: str = 'black', mapping_font_style: str = 'monospace'):
+                    bond_width: float = .04, wedge_space: float = .08, dashes: tuple[float, float] = (.2, .1),
+                    aromatic_dashes: tuple[float, float] = (.15, .05), dx_ci: float = .05, dy_ci: float = .2,
+                    dx_m: float = .05, dy_m: float = .2, dx_s: float = .05, dy_s: float = .1, span_dy: float = .15,
+                    double_space: float = .06, triple_space: float = .13, aromatic_space: float = .14,
+                    atom_radius: float = .2, bond_radius=.02, font_size: float = .5, other_size: float = .3,
+                    span_size: float = .35,  aam_size: float = .25, symbols_font_style: str = 'sans-serif',
+                    other_font_style: str = 'monospace', other_color: str = 'black', arrow_color: str = 'black',
+                    mapping_font_style: str = 'monospace'):
     """
     Settings for depict of chemical structures
 
@@ -198,6 +195,8 @@ def depict_settings(*, carbon: bool = False, aam: bool = True, monochrome: bool 
     :param dy_ci: y-axis offset relative to the center of the atom symbol for radical, charges, isotope
     :param dx_m: x-axis offset relative to the center of the atom symbol for atom-to-atom mapping
     :param dy_m: y-axis offset relative to the center of the atom symbol for atom-to-atom mapping
+    :param dx_s: x-axis offset relative to the center of the atom symbol for extended stereo label
+    :param dy_s: y-axis offset relative to the center of the atom symbol for extended stereo label
     :param span_dy: y-axis offset relative to the center of the atom symbol for hydrogen count
     :param mapping_font_style: font style for mapping
     :param wedge_space: wedge bond width
@@ -226,6 +225,7 @@ def depict_settings(*, carbon: bool = False, aam: bool = True, monochrome: bool 
     _render_config['dx_m'], _render_config['dy_m'] = dx_m, dy_m
     _render_config['other_font_style'] = other_font_style
     _render_config['dx_ci'], _render_config['dy_ci'] = dx_ci, dy_ci
+    _render_config['dx_s'], _render_config['dy_s'] = dx_s, dy_s
     _render_config['symbols_font_style'] = symbols_font_style
     _render_config['mapping_font_style'] = mapping_font_style
     _render_config['wedge_space'] = wedge_space
@@ -234,9 +234,9 @@ def depict_settings(*, carbon: bool = False, aam: bool = True, monochrome: bool 
 class DepictMolecule:
     __slots__ = ()
 
-    def depict(self: Union['MoleculeContainer', 'DepictMolecule'], *, width=None, height=None, clean2d: bool = True,
+    def depict(self, *, width=None, height=None, clean2d: bool = True,
                format: Literal['svg', 'png', 'svgz'] = 'svg', png_width=1000, png_heigh=1000, png_scale=1.,
-               _embedding=False) -> Union[str, bytes]:
+               _embedding=False) -> str | bytes:
         """
         Depict molecule in SVG or PNG format.
 
@@ -294,7 +294,7 @@ class DepictMolecule:
     def _repr_svg_(self):
         return self.depict()
 
-    def __render_bonds(self: Union['MoleculeContainer', 'DepictMolecule']):
+    def __render_bonds(self):
         atoms = self._atoms
         svg = []
         double_space = _render_config['double_space']
@@ -311,7 +311,7 @@ class DepictMolecule:
             nx, ny = atoms[n].xy
             mx, my = atoms[m].xy
             ny, my = -ny, -my
-            dx, dy = _rotate_vector(0, wedge_space, mx - nx, ny - my)
+            dx, dy = _rotate_vector(0, wedge_space, mx - nx, my - ny)
 
             svg.append(f'      <path d="M{nx:.2f} {ny:.2f} L{mx + dx:.2f} {my + dy:.2f} '
                        f'L{mx - dx:.2f} {my - dy:.2f} Z"{s == 1 and color or ""}/>')
@@ -355,7 +355,7 @@ class DepictMolecule:
                 svg.append(aromatic)
         return svg
 
-    def __render_atoms(self: 'MoleculeContainer', uid):
+    def __render_atoms(self, uid):
         bonds = self._bonds
 
         carbon = _render_config['carbon']
@@ -368,6 +368,7 @@ class DepictMolecule:
         mapping_size = _render_config['mapping_size']
         dx_m, dy_m = _render_config['dx_m'], _render_config['dy_m']
         dx_ci, dy_ci = _render_config['dx_ci'], _render_config['dy_ci']
+        dx_s, dy_s = _render_config['dx_s'], _render_config['dy_s']
         symbols_font_style = _render_config['symbols_font_style']
         span_dy = _render_config['span_dy']
         other_font_style = _render_config['other_font_style']
@@ -412,6 +413,10 @@ class DepictMolecule:
                 if atom.isotope:
                     others.append(f'        <text x="{x:.2f}" y="{y:.2f}" dx="-{dx_ci:.2f}" dy="-{dy_ci:.2f}" '
                                   f'text-anchor="end">{atom.isotope}</text>')
+                if atom.stereo is not None and atom.extended_stereo:
+                    label = f'&amp;{atom.extended_stereo}' if atom.extended_stereo > 0 else f'o{-atom.extended_stereo}'
+                    others.append(f'        <text x="{x:.2f}" y="{y:.2f}" dx="{dx_s:.2f}" dy="-{dy_s + font3:.2f}">'
+                                  f'{label}</text>')
 
                 if len(symbol) > 1:
                     dx = font7
@@ -448,8 +453,13 @@ class DepictMolecule:
                 if mapping:
                     maps.append(f'        <text x="{x:.2f}" y="{y:.2f}" dx="-{dx_mm:.2f}" '
                                 f'dy="{dy_m + font3:.2f}">{n}</text>')
-            elif mapping:
-                maps.append(f'        <text x="{x:.2f}" y="{y:.2f}" dx="-{dx_m:.2f}" dy="{dy_m:.2f}">{n}</text>')
+            else:
+                if mapping:
+                    maps.append(f'        <text x="{x:.2f}" y="{y:.2f}" dx="-{dx_m:.2f}" dy="{dy_m:.2f}">{n}</text>')
+                if atom.stereo is not None and atom.extended_stereo:
+                    label = f'&amp;{atom.extended_stereo}' if atom.extended_stereo > 0 else f'o{-atom.extended_stereo}'
+                    others.append(f'        <text x="{x:.2f}" y="{y:.2f}" dx="{dx_s:.2f}" dy="-{dy_s:.2f}">'
+                                  f'{label}</text>')
 
         if svg:  # group atoms symbols
             if fill_zone:
@@ -491,9 +501,9 @@ class DepictMolecule:
 class DepictReaction:
     __slots__ = ()
 
-    def depict(self: 'ReactionContainer', *, width=None, height=None, clean2d: bool = True,
+    def depict(self, *, width=None, height=None, clean2d: bool = True,
                format: Literal['svg', 'png', 'svgz'] = 'svg',
-               png_width=1000, png_heigh=1000, png_scale=1.) -> Union[str, bytes]:
+               png_width=1000, png_heigh=1000, png_scale=1.) -> str | bytes:
         """
         Depict reaction in SVG format.
 

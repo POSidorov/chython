@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2021-2024 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2021-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -20,13 +20,8 @@ from collections import defaultdict
 from itertools import product
 from operator import itemgetter
 from random import shuffle
-from typing import TYPE_CHECKING, Dict, Optional, Union, List
 from ...containers.bonds import Bond
 from ...exceptions import ValenceError
-
-
-if TYPE_CHECKING:
-    from chython import MoleculeContainer
 
 # atom, charge, unsaturation
 tuned_priority = {(7, 0, 0): -3,  # amine
@@ -54,9 +49,9 @@ charge_priority = {0: 0, -1: 1, 1: 2, 2: 3, 3: 4, -2: 5, 4: 6, -3: 7, -4: 8}
 class Saturation:
     __slots__ = ()
 
-    def saturate(self: 'MoleculeContainer', neighbors_distances: Optional[Dict[int, Dict[int, float]]] = None,
+    def saturate(self, neighbors_distances: dict[int, dict[int, float]] | None = None,
                  reset_electrons: bool = True, expected_charge: int = 0, expected_radicals_count: int = 0,
-                 allow_errors: bool = True, logging: bool = False) -> Union[bool, List[str]]:
+                 allow_errors: bool = True, logging: bool = False) -> bool | list:
         """
         Saturate molecules with double and triple bonds and charges and radical states to correct valences of atoms.
         Note: works only with fully explicit hydrogens!
@@ -186,7 +181,7 @@ def _find_possible_valences(atoms, neighbors_distances, charges, radicals, allow
             el = len(env)
             dc = charges[n]
             dr = radicals[n]
-            for charge, is_radical, valence, implicit, explicit_dict in atoms[n]._compiled_saturation_rules:
+            for charge, is_radical, valence, implicit, explicit_dict in atoms[n].saturation_rules:
                 if valence < el or dc is not None and dc != charge or dr is not None and dr != is_radical:
                     continue  # skip impossible rules
                 if explicit_dict:

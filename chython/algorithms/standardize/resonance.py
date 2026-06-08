@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2021-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2021-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -16,12 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
-from typing import List, TYPE_CHECKING, Union
 from ...exceptions import ValenceError
-
-
-if TYPE_CHECKING:
-    from chython import MoleculeContainer
 
 
 # atomic number constants
@@ -40,8 +35,7 @@ Te = 52
 class Resonance:
     __slots__ = ()
 
-    def fix_resonance(self: Union['MoleculeContainer', 'Resonance'], *, logging=False,
-                      _fix_stereo=True) -> Union[bool, List[int]]:
+    def fix_resonance(self, *, logging=False) -> bool | list:
         """
         Transform biradical or dipole resonance structures into neutral form. Return True if structure form changed.
 
@@ -94,9 +88,8 @@ class Resonance:
         if hs:
             for n in hs:
                 self.calc_implicit(n)
-            self.flush_cache(keep_sssr=True, keep_components=True)
-            if _fix_stereo:
-                self.fix_stereo()
+            self.flush_cache(keep_sssr=True, keep_components=True, keep_special_connectivity=True)
+            self.fix_stereo()
             if logging:
                 return list(hs)
             return True
@@ -104,7 +97,7 @@ class Resonance:
             return []
         return False
 
-    def __find_delocalize_path(self: 'MoleculeContainer', start, finish, constrains, odd_only):
+    def __find_delocalize_path(self, start, finish, constrains, odd_only):
         bonds = self._bonds
         stack = [(start, n, 0, b.order + 1) for n, b in bonds[start].items() if n in constrains and b.order < 3]
         path = []
@@ -132,7 +125,7 @@ class Resonance:
             stack.extend((current, n, depth, bo) for n, b in bonds[current].items()
                          if n not in seen and n in constrains and 1 <= (bo := b.order + diff) <= 3)
 
-    def __entries(self: 'MoleculeContainer'):
+    def __entries(self):
         atoms = self._atoms
         bonds = self._bonds
         errors = {n for n, a in self.atoms() if a.implicit_hydrogens is None}

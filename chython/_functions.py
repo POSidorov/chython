@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2020, 2021 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2020-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -16,7 +16,33 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
+from functools import wraps
 from itertools import product
+
+
+_SENTINEL = object()
+
+
+def cached_method(func):
+    """Cache no-argument method result in instance __dict__. Cleared by flush_cache().
+
+    Thread-safe for concurrent reads without locking:
+    - dict.get/setitem are atomic in CPython 3.14 free-threaded mode
+    - Wrapped functions are pure (deterministic, read-only on self)
+    - Duplicate computation on cold cache is benign (same result)
+    - Mutations must be sequential (caller's responsibility)
+    """
+    key = f'__cached_method_{func.__name__}'
+
+    @wraps(func)
+    def wrapper(self):
+        val = self.__dict__.get(key, _SENTINEL)
+        if val is not _SENTINEL:
+            return val
+        val = func(self)
+        self.__dict__[key] = val
+        return val
+    return wrapper
 
 
 # lazy itertools.product with diagonal combination precedence
@@ -66,4 +92,4 @@ def lazy_product(*args):
             yield tuple(p[x] for x, p in zip(ind, pools))
 
 
-__all__ = ['lazy_product']
+__all__ = ['cached_method', 'lazy_product']

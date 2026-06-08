@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2017-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2017-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -25,11 +25,11 @@ from .query import *
 from .reaction import *
 
 
-def unpach(data: bytes, /, *, compressed=True) -> Union[MoleculeContainer, ReactionContainer]:
+def unpach(data: bytes, /, *, compressed=True, skip_labels_calculation=False) -> Union[MoleculeContainer, ReactionContainer]:
     if compressed:
         data = decompress(data)
     try:
-        return MoleculeContainer.unpack(data, compressed=False)
+        return MoleculeContainer.unpack(data, compressed=False, skip_labels_calculation=skip_labels_calculation)
     except ValueError:
         pass
     # second try

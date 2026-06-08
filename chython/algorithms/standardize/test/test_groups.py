@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2023 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2023-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -69,20 +69,43 @@ data = [
         ('CC(C)(C)[N+][O-]', 'CC(C)(C)N=O'),
         ('CN=O', 'C=NO'),
         ('NC=[O+]C', '[NH2+]=COC'), ('CNC=[O+]C', 'C[NH+]=COC'), ('CN(C)C=[O+]C', 'C[N+](C)=COC'),
+        # amide rule: N=C-OH >> NH-C=O
         ('N=CO', 'NC=O'), ('N=CS', 'NC=S'),
-        ('O=C1NC=CC=C1', 'OC1=NC=CC=C1'), ('OC1=NC=CC=C1', 'OC1=NC=CC=C1'), ('N=C1NC=CC=C1', 'NC1=NC=CC=C1'),
-        ('CN=C1NC=CC=C1', 'CNC1=NC=CC=C1'),
-        ('O=C1C=CNC=C1', 'OC1=CC=NC=C1'), ('OC1=CC=NC=C1', 'OC1=CC=NC=C1'),
-        ('C=C(O)O', 'CC(=O)O'), ('C=C(O)N', 'CC(=O)N'),
+        # ring amidation (6-membered): OH-C=N in ring >> O=C-NH in ring
+        ('OC1=CC=CC=N1', 'O=C1NC=CC=C1'),
+        ('OC1=CC=NC=N1', 'O=C1NC=NC=C1'),
+        ('OC1=NC=CC=N1', 'O=C1N=CC=CN1'),
+        ('OC1=C(O)N=CC=N1', 'O=C1NC=CNC1=O'),
+        ('OC1=NC=CN=C1O', 'O=C1NC=CNC1=O'),
+        ('OC1=CC=NC(=O)N1', 'O=C1NC=CC(=O)N1'),
+        ('OC1=CC=NC(O)=N1', 'O=C1NC=CC(=O)N1'),
+        ('OC1=NC(O)=NC=C1', 'O=C1NC=CC(=O)N1'),
+        # 5-membered ring amidation (short flip)
+        ('CN1C=CC(O)=N1', 'CN1NC(=O)C=C1'),
+        # 5-membered ring amidation (long flip)
+        ('CN1N=CC=C1O', 'CN1NC=CC1=O'),
+        # hydroxypyridine to pyridone
+        ('OC1=CC=NC=C1', 'O=C1C=CNC=C1'),
+        # 6-membered ring N=C-CH adjacent to C=O (short flip)
+        ('O=C1C=CCC=N1', 'O=C1NC=CC=C1'),
+        # 6-membered ring N=C-C=C-CH adjacent to C=O (long flip)
+        ('O=C1CC=CC=N1', 'O=C1NC=CC=C1'),
+        # 6-membered ring N=C-CH adjacent to C=O (C=O between CH and ring end)
+        ('O=C1CC=NC=C1', 'O=C1C=CNC=C1'),
+        # 5-membered ring N=C-CH >> NH-C=C
+        ('C1C=NC=N1', 'N1C=CN=C1'),
+        # 5-membered ring N=C-CH with sp3 N,O closure
+        ('CN1N=CCC1=O', 'CN1NC=CC1=O'),
+        # acyclic enol (51)
         ('OC=C', 'O=CC'), ('OC(C)=C', 'O=C(C)C'),
-        ('O=C1N=CC=CC1', 'OC=1N=CC=CC=1'), ('OC=1N=CC=CC=1', 'OC=1N=CC=CC=1'), ('N=C1N=CC=CC1', 'NC=1N=CC=CC=1'),
-        ('CN=C1N=CC=CC1', 'CNC=1N=CC=CC=1'),
+        # P rules
         ('[O-][P+](C)(C)C', 'O=P(C)(C)C'),
         ('[CH2+][P-](C)(C)C', 'C=P(C)(C)C'),
         ('FP(F)(F)(F)(F)F', 'F[P-](F)(F)(F)(F)F'),
         ('C[P-](C)(=O)=O', 'CP(C)(=O)[O-]'),
         ('CP(C)(=O)[S-]', 'CP(C)(=S)[O-]'),
         ('CP(C)(=O)S', 'CP(C)(=S)O'),
+        # S rules
         ('CS(=O)(=O)[S-]', 'CS(=O)(=S)[O-]'),
         ('CS(=O)(=O)S', 'CS(=O)(=S)O'),
         ('C[S+](C)[O-]', 'CS(C)=O'),
@@ -96,6 +119,7 @@ data = [
         ('CS(C)(=O)O', 'CS(C)(=O)=O'),
         ('CS(C)(=O)N', 'CS(C)(=O)=N'),
         ('N=S(C)O', 'NS(C)=O'), ('N=S(C)(C)(C)O', 'NS(C)(C)(C)=O'),
+        # C rules
         ('C#CO', 'C=C=O'),
         ('C#CNC', 'C=C=NC'),
         ('C=O |^1:0|', '[C-]#[O+]'),
@@ -103,10 +127,12 @@ data = [
         ('[CH2+]N(C)C', 'C=[N+](C)C'),
         ('[CH2+]N(C)O', 'C=[N+](C)O'),
         ('[CH2+]=NC', 'C#[N+]C'),
+        # Cl rules
         ('O[Cl+][O-]', 'OCl=O'),
         ('O[Cl+2]([O-])[O-]', 'OCl(=O)=O'),
         ('O[Cl+3]([O-])([O-])[O-]', 'OCl(=O)(=O)=O'),
         ('[Cl-]=O', 'Cl[O-]'),
+        # S=N double rules
         ('OS(=N)(=N)O', 'O=S(N)(N)=O'), ('OS(=N)(=N)C', 'O=S(N)(=N)C')
 ]
 

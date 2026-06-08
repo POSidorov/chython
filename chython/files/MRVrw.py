@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2017-2024 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2017-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  This file is part of chython.
 #
 #  chython is free software; you can redistribute it and/or modify
@@ -17,11 +17,10 @@
 #  along with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 from collections import defaultdict
-from io import StringIO, BytesIO, TextIOWrapper, BufferedIOBase, BufferedReader
 from itertools import count, islice, chain
-from lxml.etree import iterparse, QName, tostring
 from pathlib import Path
 from typing import Union, List, Iterator, Dict, Optional
+from xml.etree.ElementTree import iterparse, tostring
 from ._convert import create_molecule, create_reaction
 from ._mapping import postprocess_parsed_molecule, postprocess_parsed_reaction
 from .mdl import postprocess_molecule
@@ -31,6 +30,12 @@ from ..exceptions import EmptyMolecule, EmptyReaction
 
 bond_map = {8: '1" queryType="Any', 4: 'A', 1: '1', 2: '2', 3: '3',
             'Any': 8, 'any': 8, 'A': 4, 'a': 4, '1': 1, '2': 2, '3': 3}
+
+
+def _local_name(tag):
+    if tag[0] == '{':
+        return tag.split('}', 1)[1]
+    return tag
 
 
 def xml_dict(parent_element, stop_list=None):
@@ -46,9 +51,12 @@ def xml_dict(parent_element, stop_list=None):
     if len(parent_element):
         elements_grouped = defaultdict(list)
         for element in parent_element:
-            name = QName(element).localname
+            name = _local_name(element.tag)
             if name in stop_list:
-                text.append(tostring(element, encoding=str, with_tail=False))
+                tail = element.tail
+                element.tail = None
+                text.append(tostring(element, encoding='unicode'))
+                element.tail = tail
             else:
                 elements_grouped[name].append(element)
 
@@ -97,18 +105,18 @@ class MRVRead:
         elif isinstance(file, Path):
             self.__file = file.open('rb')
             self.__is_buffer = False
-        elif isinstance(file, (BytesIO, BufferedReader, BufferedIOBase)):
+        elif hasattr(file, 'read'):
             self.__file = file
             self.__is_buffer = True
         else:
-            raise TypeError('invalid file. BytesIO, BufferedReader and BufferedIOBase subclasses expected')
+            raise TypeError('invalid file. file-like object or path to file expected')
         self.__ignore = ignore
         self.__remap = remap
         self.__calc_cis_trans = calc_cis_trans
         self.__ignore_stereo = ignore_stereo
         self.__ignore_bad_isotopes = ignore_bad_isotopes
         self.__tell = 0
-        self.__xml = iterparse(self.__file, tag='{*}MChemicalStruct')
+        self.__xml = iterparse(self.__file, events=('end',))
         self.__buffer = None
 
     def read(self, amount: Optional[int] = None) -> List[Union[ReactionContainer, MoleculeContainer]]:
@@ -171,8 +179,8 @@ class MRVRead:
             rxn = create_reaction(tmp, ignore_bad_isotopes=self.__ignore_bad_isotopes, _m_cls=self.molecule_cls,
                                   _r_cls=self.reaction_cls)
             if not self.__ignore_stereo:
-                for mol, tmp in zip(rxn.molecules(), chain(tmp['reactants'], tmp['reagents'], tmp['products'])):
-                    postprocess_molecule(mol, tmp, calc_cis_trans=self.__calc_cis_trans)
+                for mol, parsed in zip(rxn.molecules(), chain(tmp['reactants'], tmp['reagents'], tmp['products'])):
+                    postprocess_molecule(mol, parsed, calc_cis_trans=self.__calc_cis_trans)
             if meta:
                 rxn.meta.update(meta)
             return rxn
@@ -211,6 +219,7 @@ class MRVRead:
                         if 'chython_unparsed_metadata' not in meta:
                             meta['chython_unparsed_metadata'] = []
                         meta['chython_unparsed_metadata'].append(x)
+            return meta
         else:
             return {}
 
@@ -250,13 +259,14 @@ class MRVRead:
     def _read_block(self, *, current: bool = True) -> dict:
         if not current or not self.__buffer:
             self.__buffer = None
-            try:
-                e = next(self.__xml)[1]
-            except StopIteration:
+            for event, e in self.__xml:
+                if _local_name(e.tag) == 'MChemicalStruct':
+                    self.__buffer = xml_dict(e)
+                    self.__tell += 1
+                    e.clear()
+                    break
+            else:
                 raise EOFError
-            self.__buffer = xml_dict(e)
-            self.__tell += 1
-            e.clear()
         return self.__buffer
 
 
@@ -383,12 +393,11 @@ class MRVWrite:
         elif isinstance(file, Path):
             self.__file = file.open('w')
             self.__is_buffer = False
-        elif isinstance(file, (TextIOWrapper, StringIO)):
+        elif hasattr(file, 'write'):
             self.__file = file
             self.__is_buffer = True
         else:
-            raise TypeError('invalid file. '
-                            'TextIOWrapper, StringIO, BytesIO, BufferedReader and BufferedIOBase subclasses possible')
+            raise TypeError('invalid file. file-like object or path to file expected')
         self.__writable = True
         self.__finalized = False
         self.__mapping = mapping

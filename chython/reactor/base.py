@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#  Copyright 2014-2025 Ramil Nugmanov <nougmanoff@protonmail.com>
+#  Copyright 2014-2026 Ramil Nugmanov <nougmanoff@protonmail.com>
 #  Copyright 2019 Adelia Fatykhova <adelik21979@gmail.com>
 #  This file is part of chython.
 #
@@ -24,7 +24,7 @@ from ..periodictable import Element, AnyElement, QueryElement
 
 
 class BaseReactor:
-    def __init__(self, pattern, replacement, delete_atoms, fix_rings, fix_tautomers, fix_broken_pyrroles):
+    def __init__(self, pattern, replacement, delete_atoms, canonicalize, fix_tautomers, ignore_pyrrole_hydrogen):
         if isinstance(replacement, QueryContainer):
             for n, a in replacement.atoms():
                 if not isinstance(a, (AnyElement, QueryElement)):
@@ -37,9 +37,9 @@ class BaseReactor:
 
         self._to_delete = {n for n, a in pattern.atoms() if not a.masked} - set(replacement) if delete_atoms else ()
         self._replacement = replacement
-        self._fix_rings = fix_rings
+        self._canonicalize = canonicalize
         self._fix_tautomers = fix_tautomers
-        self._fix_broken_pyrroles = fix_broken_pyrroles
+        self._ignore_pyrrole_hydrogen = ignore_pyrrole_hydrogen
 
     def _get_deleted(self, structure, mapping):
         if not self._to_delete:
@@ -96,8 +96,10 @@ class BaseReactor:
                     a.is_radical = ra.is_radical
                     if ra.stereo is not None:  # override stereo
                         a._stereo = ra.stereo
+                        a._extended_stereo = sa.extended_stereo  # stereo swap doesn't resolve uncertainty
                     elif sa.stereo is not None:  # keep original stereo
                         stereo_atoms.append(m)  # mark for stereo fix
+                        a._extended_stereo = sa._extended_stereo  # masked by property if retranslation fails
                 else:
                     raise ValueError("AnyElement doesn't match to pattern")
             else:  # QueryElement or Element
@@ -111,6 +113,7 @@ class BaseReactor:
                     if isinstance(ra, Element):
                         a._implicit_hydrogens = ra.implicit_hydrogens  # keep H count from patch
                         a.xy = ra.xy  # keep coordinates from patch
+                        a._extended_stereo = ra._extended_stereo  # propagate template's extended stereo
                     elif ra.implicit_hydrogens:  # keep H count from patch
                         a._implicit_hydrogens = ra.implicit_hydrogens[0]
                 else:  # existing atoms
@@ -118,8 +121,14 @@ class BaseReactor:
                     a.xy = sa.xy  # preserve existing coordinates
                     if ra.stereo is not None:
                         a._stereo = ra.stereo
+                        # template's extended stereo takes priority (e.g. reaction giving racemic product)
+                        if isinstance(ra, Element) and ra.extended_stereo is not None:
+                            a._extended_stereo = ra.extended_stereo
+                        else:  # stereo swap doesn't resolve uncertainty
+                            a._extended_stereo = sa.extended_stereo
                     elif sa.stereo is not None:  # keep original stereo
                         stereo_atoms.append(m)
+                        a._extended_stereo = sa._extended_stereo
             natoms[m] = a
             nbonds[m] = {}
 
@@ -144,6 +153,7 @@ class BaseReactor:
         for n, sa in satoms.items():  # add unmatched or masked atoms
             if n not in patched_atoms and n not in to_delete:
                 natoms[n] = a = sa.copy(hydrogens=True)
+                a._extended_stereo = sa._extended_stereo  # preserve for atoms outside RC
                 nbonds[n] = {}
                 if sa.stereo is not None:
                     # in case of allenes label can disappear/change, thus, requires recalculation
@@ -201,10 +211,9 @@ class BaseReactor:
                 nbonds[n][m]._stereo = s
             # else: ignore label
 
-        if self._fix_rings:
-            new.kekule(ignore_pyrrole_hydrogen=self._fix_broken_pyrroles)  # keeps stereo as is
-            if not new.thiele(fix_tautomers=self._fix_tautomers):  # fixes stereo if any ring aromatized
-                new.fix_stereo()
+        if self._canonicalize:
+            new.canonicalize(fix_tautomers=self._fix_tautomers,
+                            ignore_pyrrole_hydrogen=self._ignore_pyrrole_hydrogen)
         else:
             new.fix_stereo()
         return new

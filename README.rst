@@ -29,20 +29,14 @@ Chython is fork of `CGRtools <https://github.com/stsouko/CGRtools>`_.
 Install
 =======
 
-Only python 3.8+.
+Only python 3.10+.
 
-* **stable version available through PyPI**::
-
-    pip install chython
-
-* Install chython library DEV version for features that are not well tested::
-
-    pip install -U git+https://github.com/chython/chython.git@master#egg=chython
+    pip install chython[racer-default]
 
 Copyright
 =========
 
-* 2014-2023 Ramil Nugmanov nougmanoff@protonmail.com main developer
+* 2014-2026 Ramil Nugmanov nougmanoff@protonmail.com main developer
 
 Contributors
 ============
